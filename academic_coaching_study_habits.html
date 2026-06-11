@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Succeeding in College: Interactive Study Masterclass</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons for aesthetics -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .coach-pulse {
+            animation: coachPulse 2s infinite ease-in-out;
+        }
+        @keyframes coachPulse {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-4px) scale(1.02); }
+        }
+        .progress-bar-transition {
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .flashcard-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .flashcard-flipped {
+            transform: rotateY(180deg);
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col min-h-screen">
+
+    <!-- Top Progress & Header Bar -->
+    <header class="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm backdrop-blur-md bg-white/90">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 text-white p-2 rounded-xl shadow-md shadow-indigo-200">
+                    <i class="fa-solid fa-graduation-cap text-lg md:text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-slate-900 text-sm md:text-base leading-tight">CC Success Launchpad</h1>
+                    <p class="text-xs text-slate-500 font-medium">Interactive Coaching Seminar</p>
+                </div>
+            </div>
+            
+            <!-- Coaching Metrics -->
+            <div class="flex items-center space-x-4 md:space-x-6">
+                <div class="text-right hidden sm:block">
+                    <p class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Coach Points</p>
+                    <p class="text-sm font-black text-indigo-600" id="score-counter">0 XP</p>
+                </div>
+                <div class="w-28 md:w-40 bg-slate-100 rounded-full h-3 relative overflow-hidden" title="Lesson Progress">
+                    <div id="lesson-progress-bar" class="bg-gradient-to-r from-indigo-500 to-emerald-500 h-3 progress-bar-transition w-[5%]"></div>
+                </div>
+                <span id="progress-percent" class="text-xs font-bold text-slate-700 min-w-[28px]">5%</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-6 md:py-8 flex flex-col lg:flex-row gap-6">
+        
+        <!-- Left Sidebar: Coach Character Interaction Drawer -->
+        <aside class="w-full lg:w-1/3 flex flex-col gap-4 shrink-0">
+            <!-- Coach Card -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm relative overflow-hidden flex flex-col h-full justify-between">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-full -mr-6 -mt-6 -z-10"></div>
+                
+                <div>
+                    <!-- Coach Avatar Section -->
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="relative">
+                            <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg coach-pulse">
+                                <!-- SVG Academic Coach Icon/Avatar representing Coach Carter -->
+                                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <span class="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></span>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-base flex items-center">
+                                Coach Carter 
+                                <span class="ml-2 px-1.5 py-0.5 bg-indigo-50 text-indigo-700 text-[10px] font-semibold rounded uppercase">Academic Success Guide</span>
+                            </h3>
+                            <p class="text-xs text-slate-500">Your Personal CC Mentor</p>
+                        </div>
+                    </div>
+
+                    <!-- Coach Message Bubble -->
+                    <div class="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-4 relative mb-4">
+                        <div class="absolute top-4 left-0 transform -translate-x-1/2 rotate-45 w-3 h-3 bg-indigo-50/70 border-l border-b border-indigo-100"></div>
+                        <p id="coach-bubble-text" class="text-sm text-slate-700 leading-relaxed font-medium transition-opacity duration-300">
+                            "Welcome! I am so excited to have you here. Transitioning into college classes (especially as a busy freshman or balancing high school as a dual-credit student) takes a whole new playbook. Let's unlock the top 5 game-changing study habits to build your ultimate custom success blueprint!"
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Custom Tips Box -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                    <h4 class="text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                        PRO-TIP OF THE MOMENT
+                    </h4>
+                    <p id="dynamic-pro-tip" class="text-xs text-slate-500 leading-relaxed">
+                        Dual credit and community college classes aren't harder, they just demand high self-directed scheduling. You own your time now!
+                    </p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Section: Interactive Classroom / Content Area -->
+        <section class="w-full lg:w-2/3 flex flex-col gap-6">
+            
+            <!-- Dynamic Module Content Container -->
+            <div id="classroom-card" class="bg-white border border-slate-200 rounded-3xl p-6 shadow-md transition-all duration-300 min-h-[480px] flex flex-col justify-between">
+                
+                <!-- Main Active Content Slot -->
+                <div id="interactive-workspace">
+                    <!-- CONTENT DYNAMICALLY GENERATED VIA JS -->
+                </div>
+
+                <!-- Navigation Controls inside the classroom block -->
+                <div class="border-t border-slate-100 pt-4 mt-6 flex items-center justify-between">
+                    <button id="prev-btn" onclick="goToPrevStep()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition flex items-center gap-2 disabled:opacity-30 disabled:pointer-events-none">
+                        <i class="fa-solid fa-arrow-left"></i> Previous
+                    </button>
+                    <div class="text-xs text-slate-400 font-semibold" id="slide-indicator">Step 1 of 8</div>
+                    <button id="next-btn" onclick="goToNextStep()" class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-indigo-100 transition flex items-center gap-2">
+                        Next <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Blueprint Fast Tracker (Persistent Preview at the Bottom) -->
+            <div class="bg-slate-900 text-white rounded-2xl p-4 shadow-xl border border-slate-800">
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-xs font-bold tracking-wider text-slate-400 uppercase flex items-center gap-2">
+                        <i class="fa-solid fa-clipboard-list text-emerald-400"></i>
+                        Your Real-Time Semester Success Blueprint Progress
+                    </h4>
+                    <span id="blueprint-count" class="text-xs bg-slate-800 text-indigo-300 px-2 py-0.5 rounded-full font-bold">0 of 5 Habits Completed</span>
+                </div>
+                <!-- Mini Progress Visualizer Grid -->
+                <div class="grid grid-cols-5 gap-2">
+                    <div id="dot-habit-1" class="h-2 rounded-full bg-slate-800 transition-colors duration-500"></div>
+                    <div id="dot-habit-2" class="h-2 rounded-full bg-slate-800 transition-colors duration-500"></div>
+                    <div id="dot-habit-3" class="h-2 rounded-full bg-slate-800 transition-colors duration-500"></div>
+                    <div id="dot-habit-4" class="h-2 rounded-full bg-slate-800 transition-colors duration-500"></div>
+                    <div id="dot-habit-5" class="h-2 rounded-full bg-slate-800 transition-colors duration-500"></div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Global Toast notification element instead of system alert -->
+    <div id="custom-toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+        <div id="toast-icon-wrapper" class="p-1 rounded-lg bg-indigo-500">
+            <i class="fa-solid fa-circle-info text-white"></i>
+        </div>
+        <span id="toast-message" class="text-xs font-medium">System Alert Message!</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-100 border-t border-slate-200 mt-auto py-4 text-center text-xs text-slate-500">
+        <p>© 2026 Community College Student Success Coalition. Designed with academic integrity & student love.</p>
+    </footer>
+
+    <script>
+        // --- APPLICATION STATE ---
+        const state = {
+            currentStep: 0,
+            score: 0,
+            earnedXpThisStep: false,
+            // Study Diagnostic State
+            diagnosticAnswers: {},
+            diagnosticResult: "",
+            // Habit 1: Time Boxer State
+            timeSlots: {
+                "08:00 AM": "Class",
+                "10:00 AM": "Free",
+                "12:00 PM": "Free",
+                "02:00 PM": "Free",
+                "04:00 PM": "Free",
+                "06:00 PM": "Work/Free"
+            },
+            timeboxScore: 0,
+            timeboxCompleted: false,
+            // Habit 2: Active Recall State
+            recallScore: 0,
+            activeCardIdx: 0,
+            cardsReviewed: [false, false, false],
+            // Habit 3: Resource Matcher State
+            draggedItemId: null,
+            matchedResources: {},
+            // Habit 4: Study Commitment Calculator State
+            credits: 12,
+            workHours: 20,
+            sleepHours: 8,
+            // Habit 5: Spaced Repetition State
+            forgettingDay: 0,
+            retention: 100,
+            spacedActionTaken: false,
+            // Customized Blueprint Output State
+            blueprintData: {
+                diagnostic: "Undiscovered Explorer",
+                habit1Text: "",
+                habit2Text: "",
+                habit3Text: "",
+                habit4Text: "",
+                habit5Text: ""
+            }
+        };
+
+        // Static definitions for content progression
+        const steps = [
+            { id: "intro", title: "Coach Welcome & Diagnostic Blueprint Quiz" },
+            { id: "habit1", title: "Habit 1: Time Blocking & The Magic Calendar Grid" },
+            { id: "habit2", title: "Habit 2: Active Recall (Flashcards vs. Re-reading)" },
+            { id: "habit3", title: "Habit 3: Master the Syllabus & Campus Resources" },
+            { id: "habit4", title: "Habit 4: The 2-for-1 Study Commitment Multiplier" },
+            { id: "habit5", title: "Habit 5: Spaced Repetition (Beating the Forgetting Curve)" },
+            { id: "actionplan", title: "Your Personalized Student Success Blueprint" },
+            { id: "outro", title: "Launchpad Graduation!" }
+        ];
+
+        // Coach commentary configurations for each step
+        const coachPhrases = [
+            "Let's start by mapping your baseline habits! Be honest on this quick diagnostic. No grades here—just pathways to success!",
+            "Habit 1 is about reclaiming your schedule. Community college students often juggle work, family, and high school. Let's arrange a sample workday!",
+            "Ditch the highlighters! Highlighted text only creates an 'illusion of competence'. Active self-testing is where the true brain muscle builds.",
+            "My favorite CC secret: Resources are pre-funded by your student fees! Think of campus tutors and advisors as your personal success consultants.",
+            "The 2-for-1 rule sets standard expectations. Let's use our study-hour engine to balance your work, class, and social lifestyle smoothly.",
+            "Don't stack 10 hours of study right before your Tuesday exam! Let's test how dividing study into tiny chunks changes long-term mental retention.",
+            "Stellar work! Check out your customized Action Blueprint. Copy this plan to your notes, pin it, and execute it starting day one!",
+            "You are now fully equipped with the college playbook. Remember, your coaching door is always open. Go conquer this semester!"
+        ];
+
+        const proTips = [
+            "A diagnosis is the first step to optimization. Learn what type of learner you naturally are!",
+            "Treat your college study slots like paid work shifts. If you wouldn't skip work, don't skip study block!",
+            "Reading a textbook over and over is passive. Forcing your brain to generate answers constructs deep memory paths.",
+            "CCs have richer tutoring departments per capita than many universities. Do not suffer in silence!",
+            "If you work 20+ hours a week, registering for 12 or 15 credits is dangerous without deliberate planning.",
+            "Studying 20 minutes a day for 6 days is 10 times more effective than cramming for 2 hours on Sunday.",
+            "A blueprint in the head is a dream. A printed blueprint on a desk is a strategy.",
+            "The transition to higher education is a marathon, not a sprint. Take care of your mental well-being too."
+        ];
+
+        // Audio simulation and visual state changes helper
+        function triggerToast(message, type = "info") {
+            const toast = document.getElementById("custom-toast");
+            const text = document.getElementById("toast-message");
+            const wrapper = document.getElementById("toast-icon-wrapper");
+            
+            text.innerText = message;
+            
+            if (type === "success") {
+                wrapper.className = "p-1 rounded-lg bg-emerald-500 text-white";
+                wrapper.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+            } else if (type === "warn") {
+                wrapper.className = "p-1 rounded-lg bg-amber-500 text-white";
+                wrapper.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+            } else {
+                wrapper.className = "p-1 rounded-lg bg-indigo-500 text-white";
+                wrapper.innerHTML = '<i class="fa-solid fa-circle-info"></i>';
+            }
+
+            // Slide in animation
+            toast.className = "fixed bottom-5 right-5 z-50 transform translate-y-0 opacity-100 transition-all duration-300 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3";
+            
+            setTimeout(() => {
+                toast.className = "fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3";
+            }, 3000);
+        }
+
+        function addXp(amount) {
+            state.score += amount;
+            document.getElementById("score-counter").innerText = state.score + " XP";
+            triggerToast(`+${amount} XP Earned! Great active learning!`, "success");
+        }
+
+        // --- NAVIGATION HANDLERS ---
+        function updateProgressUi() {
+            const percent = Math.round((state.currentStep / (steps.length - 1)) * 100);
+            document.getElementById("lesson-progress-bar").style.width = `${percent}%`;
+            document.getElementById("progress-percent").innerText = `${percent}%`;
+            document.getElementById("slide-indicator").innerText = `Step ${state.currentStep + 1} of ${steps.length}`;
+            
+            // Lock/Unlock state check
+            const prevBtn = document.getElementById("prev-btn");
+            if (state.currentStep === 0) {
+                prevBtn.setAttribute("disabled", "true");
+            } else {
+                prevBtn.removeAttribute("disabled");
+            }
+
+            // Coach text update dynamically
+            document.getElementById("coach-bubble-text").innerText = coachPhrases[state.currentStep];
+            document.getElementById("dynamic-pro-tip").innerText = proTips[state.currentStep];
+
+            // Render matching visual dots on blueprint bottom bar
+            for (let i = 1; i <= 5; i++) {
+                const dot = document.getElementById(`dot-habit-${i}`);
+                if (state.currentStep >= i) {
+                    dot.className = "h-2 rounded-full bg-emerald-500 transition-colors duration-500 shadow-sm shadow-emerald-400";
+                } else {
+                    dot.className = "h-2 rounded-full bg-slate-800 transition-colors duration-500";
+                }
+            }
+            document.getElementById("blueprint-count").innerText = `${Math.min(5, Math.max(0, state.currentStep))} of 5 Habits Formed`;
+        }
+
+        function goToNextStep() {
+            if (state.currentStep < steps.length - 1) {
+                // Pre-validation checking per step if needed
+                if (state.currentStep === 0 && Object.keys(state.diagnosticAnswers).length < 3) {
+                    triggerToast("Please answer all diagnostic questions before moving forward!", "warn");
+                    return;
+                }
+                
+                state.currentStep++;
+                renderWorkspace();
+                updateProgressUi();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                triggerToast("You have reached the end of the Launchpad! Congratulations!", "success");
+            }
+        }
+
+        function goToPrevStep() {
+            if (state.currentStep > 0) {
+                state.currentStep--;
+                renderWorkspace();
+                updateProgressUi();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // --- RENDER ROUTER ---
+        function renderWorkspace() {
+            const container = document.getElementById("interactive-workspace");
+            
+            switch (state.currentStep) {
+                case 0:
+                    renderIntroDiagnostic(container);
+                    break;
+                case 1:
+                    renderHabit1TimeBlocker(container);
+                    break;
+                case 2:
+                    renderHabit2ActiveRecall(container);
+                    break;
+                case 3:
+                    renderHabit3SyllabusMatch(container);
+                    break;
+                case 4:
+                    renderHabit4Multiplier(container);
+                    break;
+                case 5:
+                    renderHabit5SpacedRepetition(container);
+                    break;
+                case 6:
+                    renderActionBlueprint(container);
+                    break;
+                case 7:
+                    renderOutroGraduation(container);
+                    break;
+                default:
+                    container.innerHTML = `<p class="text-red-500">Workspace Error: Slide state out of bounds.</p>`;
+            }
+        }
+
+        // --- RENDERERS FOR INDIVIDUAL MODULES ---
+
+        function renderIntroDiagnostic(dom) {
+            dom.innerHTML = `
+                <div class="space-y-5 animate-fade-in">
+                    <div>
+                        <span class="px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded-full font-bold text-xs uppercase tracking-wider">Step 1: Onboarding</span>
+                        <h2 class="text-2xl font-black text-slate-900 mt-2">What's Your College Study Strategy Diagnostic?</h2>
+                        <p class="text-sm text-slate-500 mt-1">Answer these three simple questions to identify your academic profile before diving into our 5 core pillars.</p>
+                    </div>
+
+                    <!-- Question Group 1 -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                        <p class="font-bold text-slate-800 text-sm mb-3">1. When do you typically prepare for a challenging exam?</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                            <button onclick="saveDiagnosticAns('q1', 'cram', this)" class="diag-btn q1-btn text-left p-3 border rounded-lg text-xs font-semibold bg-white transition hover:bg-indigo-50 hover:border-indigo-200">
+                                <span class="block text-indigo-600 font-bold uppercase tracking-wider text-[9px] mb-1">Method A</span>
+                                Sunday night before the Tuesday morning test (one giant session).
+                            </button>
+                            <button onclick="saveDiagnosticAns('q1', 'spaced', this)" class="diag-btn q1-btn text-left p-3 border rounded-lg text-xs font-semibold bg-white transition hover:bg-indigo-50 hover:border-indigo-200">
+                                <span class="block text-indigo-600 font-bold uppercase tracking-wider text-[9px] mb-1">Method B</span>
+                                Short review sessions spaced out over 4-5 days ahead of time.
+                            </button>
+                            <button onclick="saveDiagnosticAns('q1', 'wing', this)" class="diag-btn q1-btn text-left p-3 border rounded-lg text-xs font-semibold bg-white transition hover:bg-indigo-50 hover:border-indigo-200">
+                                <span class="block text-indigo-600 font-bold uppercase tracking-wider text-[9px] mb-1">Method C</span>
+                                Right before class while grabbing a quick coffee.
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Question Group 2 -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                        <p class="font-bold text-slate-800 text-sm mb-3">2. How do you review your college syllabus or assignment guides?</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                            <button onclick="saveDiagnosticAns('q2', 'reread', this)" class="diag-btn q2-btn text-left p-3 border rounded-lg text-xs font-semibold bg-white transition hover:bg-indigo-50 hover:border-indigo-200">
+                                <span class="block text-indigo-600 font-bold uppercase tracking-wider text-[9px] mb-1">A</span>
+                                I read it once, highlight things, and rarely look back at it.
+                            </button>
+                            <button onclick="saveDiagnosticAns('q2', 'recall', this)" class="diag-btn q2-btn text-left p-3 border rounded-lg text-xs font-semibold bg-white transition hover:bg-indigo-50 hover:border-indigo-200">
+                                <span class="block text-indigo-600 font-bold uppercase tracking-wider text-[9px] mb-1">B</span>
+                                I copy key dates to my master planner & look for tutoring options early.
+                            </button>
+                            <button onclick="saveDiagnosticAns('q2', 'clueless', this)" class="diag-btn q2-btn text-left p-3 border rounded-lg text-xs font-semibold bg-white transition hover:bg-indigo-50 hover:border-indigo-200">
+                                <span class="block text-indigo-600 font-bold uppercase tracking-wider text-[9px] mb-1">C</span>
+                                I only check the syllabus when I miss an assignment deadline.
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Question Group 3 -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                        <p class="font-bold text-slate-800 text-sm mb-3">3. How many hours do you plan to study outside of your scheduled class lecture blocks?</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                            <button onclick="saveDiagnosticAns('q3', 'ratio1', this)" class="diag-btn q3-btn text-left p-3 border rounded-lg text-xs font-semibold bg-white transition hover:bg-indigo-50 hover:border-indigo-200">
+                                <span class="block text-indigo-600 font-bold uppercase tracking-wider text-[9px] mb-1">Option A</span>
+                                1 hour of prep for every 1 hour sitting in class.
+                            </button>
+                            <button onclick="saveDiagnosticAns('q3', 'ratio2', this)" class="diag-btn q3-btn text-left p-3 border rounded-lg text-xs font-semibold bg-white transition hover:bg-indigo-50 hover:border-indigo-200">
+                                <span class="block text-indigo-600 font-bold uppercase tracking-wider text-[9px] mb-1">Option B</span>
+                                2-3 hours of dedicated deep focus for every class hour.
+                            </button>
+                            <button onclick="saveDiagnosticAns('q3', 'ratio0', this)" class="diag-btn q3-btn text-left p-3 border rounded-lg text-xs font-semibold bg-white transition hover:bg-indigo-50 hover:border-indigo-200">
+                                <span class="block text-indigo-600 font-bold uppercase tracking-wider text-[9px] mb-1">Option C</span>
+                                None, I rely on class attendance and listening to lectures.
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Output Message Block for Diagnostic -->
+                    <div id="diagnostic-outcome" class="hidden p-4 rounded-xl border flex items-center gap-4 transition-all duration-300">
+                        <!-- Icon Dynamic -->
+                        <div class="p-3 bg-indigo-100 text-indigo-600 rounded-xl text-xl" id="outcome-icon">
+                            <i class="fa-solid fa-compass"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs uppercase tracking-widest text-slate-400 font-bold">Your Academic Profile</p>
+                            <h4 class="font-bold text-slate-900 text-sm" id="outcome-profile">The Undiscovered Explorer</h4>
+                            <p class="text-xs text-slate-600 mt-0.5 leading-relaxed" id="outcome-desc">Analyzing answers...</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            // Keep styling state consistent when returning to step
+            restoreDiagnosticSelection();
+        }
+
+        function saveDiagnosticAns(question, value, elem) {
+            state.diagnosticAnswers[question] = value;
+            
+            // Highlight selected button visually
+            document.querySelectorAll(`.${question}-btn`).forEach(btn => {
+                btn.className = "diag-btn " + question + "-btn text-left p-3 border rounded-lg text-xs font-semibold bg-white transition hover:bg-indigo-50 hover:border-indigo-200";
+            });
+            elem.className = "diag-btn " + question + "-btn text-left p-3 border-2 border-indigo-600 bg-indigo-50/50 rounded-lg text-xs font-bold text-indigo-900 transition";
+
+            // Trigger score first time
+            if (Object.keys(state.diagnosticAnswers).length === 3 && !state.earnedXpThisStep) {
+                state.earnedXpThisStep = true;
+                addXp(100);
+            }
+
+            // Realtime outcome determination
+            if (Object.keys(state.diagnosticAnswers).length === 3) {
+                calculateDiagnosticOutcome();
+            }
+        }
+
+        function restoreDiagnosticSelection() {
+            // Restore visual button state
+            Object.keys(state.diagnosticAnswers).forEach(q => {
+                const val = state.diagnosticAnswers[q];
+                const btns = document.querySelectorAll(`.${q}-btn`);
+                btns.forEach(btn => {
+                    if (btn.innerText.includes(val === 'cram' ? 'Sunday night' : val === 'spaced' ? 'Short review' : val === 'wing' ? 'Right before' : val === 'reread' ? 'read it once' : val === 'recall' ? 'copy key dates' : val === 'clueless' ? 'only check the syllabus' : val === 'ratio1' ? '1 hour' : val === 'ratio2' ? '2-3 hours' : 'None')) {
+                        btn.className = "diag-btn " + q + "-btn text-left p-3 border-2 border-indigo-600 bg-indigo-50/50 rounded-lg text-xs font-bold text-indigo-900 transition";
+                    }
+                });
+            });
+            if (Object.keys(state.diagnosticAnswers).length === 3) {
+                calculateDiagnosticOutcome();
+            }
+        }
+
+        function calculateDiagnosticOutcome() {
+            const answers = state.diagnosticAnswers;
+            const card = document.getElementById("diagnostic-outcome");
+            const icon = document.getElementById("outcome-icon");
+            const profileName = document.getElementById("outcome-profile");
+            const profileDesc = document.getElementById("outcome-desc");
+
+            card.classList.remove("hidden");
+            
+            // Check profiles
+            if (answers.q1 === 'spaced' && answers.q2 === 'recall' && answers.q3 === 'ratio2') {
+                state.blueprintData.diagnostic = "The Strategic Scholar";
+                card.className = "p-4 rounded-xl border border-emerald-200 bg-emerald-50 text-slate-800 flex items-center gap-4 animate-scale-in";
+                icon.className = "p-3 bg-emerald-100 text-emerald-600 rounded-xl text-xl";
+                icon.innerHTML = '<i class="fa-solid fa-award"></i>';
+                profileName.innerText = "The Strategic Scholar";
+                profileDesc.innerText = "Outstanding! You are already employing high-yield strategic study patterns. Let's master the edge tools to optimize your performance even further.";
+            } else if (answers.q1 === 'cram' || answers.q3 === 'ratio0' || answers.q2 === 'clueless') {
+                state.blueprintData.diagnostic = "The Cram-Cycle Commuter";
+                card.className = "p-4 rounded-xl border border-amber-200 bg-amber-50 text-slate-800 flex items-center gap-4 animate-scale-in";
+                icon.className = "p-3 bg-amber-100 text-amber-600 rounded-xl text-xl";
+                icon.innerHTML = '<i class="fa-solid fa-battery-half"></i>';
+                profileName.innerText = "The Cram-Cycle Commuter";
+                profileDesc.innerText = "You rely on short-term memory bursts (cramming). This strategy often breaks down in college because of high-volume course workloads. You are in the perfect place to level up!";
+            } else {
+                state.blueprintData.diagnostic = "The Balanced Builder";
+                card.className = "p-4 rounded-xl border border-indigo-200 bg-indigo-50 text-slate-800 flex items-center gap-4 animate-scale-in";
+                icon.className = "p-3 bg-indigo-100 text-indigo-600 rounded-xl text-xl";
+                icon.innerHTML = '<i class="fa-solid fa-puzzle-piece"></i>';
+                profileName.innerText = "The Balanced Builder";
+                profileDesc.innerText = "You have a solid foundation but have some gaps! Let's fine-tune your calendar, testing habits, and study boundaries to ensure top GPAs.";
+            }
+        }
+
+
+        function renderHabit1TimeBlocker(dom) {
+            dom.innerHTML = `
+                <div class="space-y-4 animate-fade-in">
+                    <div>
+                        <span class="px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded-full font-bold text-xs uppercase tracking-wider">Habit 1: Time Blocking</span>
+                        <h2 class="text-2xl font-black text-slate-900 mt-2">Design Your Academic Timebox</h2>
+                        <p class="text-sm text-slate-500 mt-1">Community college students often balance job duties or high school. The secret is <strong>scheduling your study hours BEFORE they disappear</strong>. Map this sample day!</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                        <!-- Controls and Directions -->
+                        <div class="space-y-3 bg-slate-50 border border-slate-200 rounded-xl p-4">
+                            <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider">Mission Instructions</h4>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                Fit at least <strong>two Study Blocks</strong> on your daytime scheduler outside your Class schedule. Do not over-schedule work immediately after class!
+                            </p>
+                            
+                            <!-- Preset Action Items -->
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-slate-700 block">Change Block Type:</label>
+                                <div class="grid grid-cols-2 gap-1.5">
+                                    <button onclick="setTimeboxPreset('Free')" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold rounded-lg transition text-left">
+                                        🎨 Free / Relax
+                                    </button>
+                                    <button onclick="setTimeboxPreset('Class')" class="px-3 py-1.5 bg-indigo-100 text-indigo-800 hover:bg-indigo-200 text-xs font-bold rounded-lg transition text-left">
+                                        🏫 Class Session
+                                    </button>
+                                    <button onclick="setTimeboxPreset('Study')" class="px-3 py-1.5 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs font-bold rounded-lg transition text-left">
+                                        ⚡ Study Block
+                                    </button>
+                                    <button onclick="setTimeboxPreset('Work')" class="px-3 py-1.5 bg-rose-100 text-rose-800 hover:bg-rose-200 text-xs font-bold rounded-lg transition text-left">
+                                        💼 Work Shift
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="bg-indigo-50 border border-indigo-100 p-3 rounded-lg">
+                                <span class="text-[10px] font-bold text-indigo-700 uppercase block tracking-widest">Selected Tool:</span>
+                                <span id="active-tool-indicator" class="text-xs font-extrabold text-slate-800">⚡ Study Block</span>
+                            </div>
+                        </div>
+
+                        <!-- Mini Calendar Grid -->
+                        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                            <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-3 flex justify-between items-center">
+                                <span>Day Planner Grid</span>
+                                <span class="text-indigo-600 text-xs font-normal" id="calendar-score">Required: 2 Study Blocks</span>
+                            </h4>
+                            <div class="space-y-2" id="timebox-rows">
+                                <!-- Generated Dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            // Default selected brush tool
+            window.activeTool = "Study";
+            renderTimeboxRows();
+        }
+
+        function setTimeboxPreset(type) {
+            window.activeTool = type;
+            const indicators = {
+                "Free": "🎨 Free / Relax",
+                "Class": "🏫 Class Session",
+                "Study": "⚡ Study Block",
+                "Work": "💼 Work Shift"
+            };
+            document.getElementById("active-tool-indicator").innerText = indicators[type];
+        }
+
+        function renderTimeboxRows() {
+            const parent = document.getElementById("timebox-rows");
+            parent.innerHTML = "";
+            
+            let studyBlocks = 0;
+            let classBlocks = 0;
+            let workBlocks = 0;
+
+            Object.keys(state.timeSlots).forEach(time => {
+                const val = state.timeSlots[time];
+                if (val === "Study") studyBlocks++;
+                if (val === "Class") classBlocks++;
+                if (val === "Work") workBlocks++;
+
+                let styling = "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700";
+                let emoji = "🎨";
+                if (val === "Study") { styling = "bg-emerald-50 border-emerald-200 text-emerald-800 font-bold"; emoji = "⚡"; }
+                if (val === "Class") { styling = "bg-indigo-50 border-indigo-200 text-indigo-800 font-bold"; emoji = "🏫"; }
+                if (val === "Work") { styling = "bg-rose-50 border-rose-200 text-rose-800 font-bold"; emoji = "💼"; }
+
+                parent.innerHTML += `
+                    <div onclick="applyTimeboxSlot('${time}')" class="flex items-center justify-between p-2.5 border rounded-xl cursor-pointer transition ${styling}">
+                        <span class="text-xs font-mono font-bold">${time}</span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs">${emoji} ${val}</span>
+                            <span class="text-[10px] text-slate-400 font-normal italic">(Click to repaint)</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Update user criteria tracking
+            const ind = document.getElementById("calendar-score");
+            if (studyBlocks >= 2) {
+                ind.className = "text-emerald-600 text-xs font-bold";
+                ind.innerHTML = "✅ Goal Reached: Great Balance!";
+                if (!state.timeboxCompleted) {
+                    state.timeboxCompleted = true;
+                    addXp(150);
+                    // Add Habit 1 to Blueprint
+                    state.blueprintData.habit1Text = `Scheduled ${studyBlocks} dedicated 'Study Blocks' across daytime slots to ensure academic homework doesn't conflict with work schedules.`;
+                }
+            } else {
+                ind.className = "text-amber-500 text-xs font-bold";
+                ind.innerHTML = `Study Blocks: ${studyBlocks}/2 needed`;
+            }
+        }
+
+        function applyTimeboxSlot(time) {
+            state.timeSlots[time] = window.activeTool;
+            renderTimeboxRows();
+        }
+
+
+        function renderHabit2ActiveRecall(dom) {
+            dom.innerHTML = `
+                <div class="space-y-4 animate-fade-in">
+                    <div>
+                        <span class="px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded-full font-bold text-xs uppercase tracking-wider">Habit 2: Active Recall</span>
+                        <h2 class="text-2xl font-black text-slate-900 mt-2">Active Recall vs. Passive Highlight</h2>
+                        <p class="text-sm text-slate-500 mt-1">Research proves highlighting lines in a book fails to build recall. Challenge yourself below by trying to generate the answer <strong>before</strong> flipping the card.</p>
+                    </div>
+
+                    <!-- Flip Card Box UI -->
+                    <div class="max-w-md mx-auto my-6">
+                        <div id="flashcard" class="h-56 w-full cursor-pointer relative" onclick="flipFlashcard()">
+                            <div id="flashcard-inner" class="w-full h-full relative duration-500 transform flashcard-inner">
+                                
+                                <!-- Card Front Face -->
+                                <div class="absolute inset-0 bg-gradient-to-tr from-indigo-950 to-slate-900 text-white rounded-2xl p-6 shadow-xl flex flex-col justify-between backface-hidden">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-[10px] tracking-widest text-indigo-400 font-extrabold uppercase">Brain Recall Challenge</span>
+                                        <i class="fa-solid fa-brain text-indigo-400"></i>
+                                    </div>
+                                    <div class="text-center">
+                                        <p id="card-question" class="text-base md:text-lg font-bold leading-relaxed px-4">Loading Question...</p>
+                                    </div>
+                                    <div class="text-center text-[11px] text-slate-400 font-medium">
+                                        👉 Tap anywhere on card to flip and verify answer
+                                    </div>
+                                </div>
+
+                                <!-- Card Back Face -->
+                                <div class="absolute inset-0 bg-emerald-50 text-slate-800 rounded-2xl p-6 border-2 border-emerald-400 shadow-xl flex flex-col justify-between backface-hidden rotate-y-180">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-[10px] tracking-widest text-emerald-600 font-extrabold uppercase">Master Answer Key</span>
+                                        <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                                    </div>
+                                    <div class="text-center px-4">
+                                        <p id="card-answer" class="text-sm font-bold text-slate-800 leading-relaxed">Loading Answer...</p>
+                                    </div>
+                                    <div class="text-center text-[10px] text-slate-500 italic">
+                                        Click again to flip back
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Flashcard Controls -->
+                    <div class="flex flex-col items-center gap-4 bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs font-bold text-slate-600">Flashcard:</span>
+                            <span id="card-dots" class="flex gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                            </span>
+                        </div>
+
+                        <div class="flex space-x-2">
+                            <button onclick="changeRecallCard(-1)" class="px-4 py-1.5 bg-white border text-slate-700 font-bold rounded-lg text-xs hover:bg-slate-100 transition">
+                                <i class="fa-solid fa-chevron-left"></i> Back
+                            </button>
+                            <button id="mark-recall-btn" onclick="confirmRecallItem()" class="px-5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-lg text-xs shadow-md transition">
+                                I recalled this correctly! (+50 XP)
+                            </button>
+                            <button onclick="changeRecallCard(1)" class="px-4 py-1.5 bg-white border text-slate-700 font-bold rounded-lg text-xs hover:bg-slate-100 transition">
+                                Next Card <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            state.activeCardIdx = 0;
+            updateFlashcardContent();
+        }
+
+        const flashcardLibrary = [
+            { q: "What is the key difference between passive review and active recall?", a: "Passive review is reading over materials repeatedly. Active recall forces the brain to generate answers from memory, forming much stronger neural connections." },
+            { q: "What should you do immediately after finishing a heavy textbook reading assignment?", a: "Close the book and write down a brief summary or 3 main takeaways completely from memory without looking." },
+            { q: "How do flashcards work best?", a: "When you try to answer them aloud BEFORE flipping, and discard cards you get right so you focus on what you don't know." }
+        ];
+
+        function updateFlashcardContent() {
+            const current = flashcardLibrary[state.activeCardIdx];
+            document.getElementById("card-question").innerText = current.q;
+            document.getElementById("card-answer").innerText = current.a;
+            
+            // Revert flip state visually if active
+            const inner = document.getElementById("flashcard-inner");
+            inner.classList.remove("flashcard-flipped");
+
+            // Update progress indicator dots
+            const dots = document.getElementById("card-dots").children;
+            for (let i = 0; i < dots.length; i++) {
+                dots[i].className = i === state.activeCardIdx ? "w-2.5 h-2.5 rounded-full bg-indigo-600" : (state.cardsReviewed[i] ? "w-2.5 h-2.5 rounded-full bg-emerald-500" : "w-2.5 h-2.5 rounded-full bg-slate-300");
+            }
+        }
+
+        function flipFlashcard() {
+            const inner = document.getElementById("flashcard-inner");
+            inner.classList.toggle("flashcard-flipped");
+        }
+
+        function changeRecallCard(direction) {
+            state.activeCardIdx = (state.activeCardIdx + direction + flashcardLibrary.length) % flashcardLibrary.length;
+            updateFlashcardContent();
+        }
+
+        function confirmRecallItem() {
+            if (!state.cardsReviewed[state.activeCardIdx]) {
+                state.cardsReviewed[state.activeCardIdx] = true;
+                addXp(50);
+                
+                // Track total reviewed card completion
+                const totalReviewedCount = state.cardsReviewed.filter(Boolean).length;
+                if (totalReviewedCount >= 3) {
+                    state.blueprintData.habit2Text = "Committed to active self-quizzing with structured flashcards over passive text re-reading.";
+                }
+                updateFlashcardContent();
+            } else {
+                triggerToast("You've already claimed XP for this flashcard! Try testing yourself on another.", "info");
+            }
+        }
+
+
+        function renderHabit3SyllabusMatch(dom) {
+            dom.innerHTML = `
+                <div class="space-y-4 animate-fade-in">
+                    <div>
+                        <span class="px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded-full font-bold text-xs uppercase tracking-wider">Habit 3: Use Resources</span>
+                        <h2 class="text-2xl font-black text-slate-900 mt-2">Connect Problems to CC Support Centers</h2>
+                        <p class="text-sm text-slate-500 mt-1">Syllabus navigation doesn't mean memorizing everything. It means knowing who to ask when an obstacle pops up. Drag each student crisis to the correct support resource!</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                        <!-- Scenarios to match (Draggables or click selection for mobile compatibility) -->
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                            <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-3">Student Scenarios</h4>
+                            <div class="space-y-2" id="scenarios-container">
+                                <div id="sc-math" draggable="true" ondragstart="onResourceDragStart(event)" onclick="selectScenario('sc-math', this)" class="bg-white p-3 border rounded-xl shadow-sm cursor-grab text-xs font-semibold flex justify-between items-center transition hover:border-indigo-400">
+                                    <span>"I have a pre-calculus exam Tuesday but don't understand quadratic formulas."</span>
+                                    <i class="fa-solid fa-grip-vertical text-slate-400"></i>
+                                </div>
+                                <div id="sc-essay" draggable="true" ondragstart="onResourceDragStart(event)" onclick="selectScenario('sc-essay', this)" class="bg-white p-3 border rounded-xl shadow-sm cursor-grab text-xs font-semibold flex justify-between items-center transition hover:border-indigo-400">
+                                    <span>"My English essay outline is sloppy and structure is confusing."</span>
+                                    <i class="fa-solid fa-grip-vertical text-slate-400"></i>
+                                </div>
+                                <div id="sc-career" draggable="true" ondragstart="onResourceDragStart(event)" onclick="selectScenario('sc-career', this)" class="bg-white p-3 border rounded-xl shadow-sm cursor-grab text-xs font-semibold flex justify-between items-center transition hover:border-indigo-400">
+                                    <span>"I need to apply for local internships but don't have a modern resume."</span>
+                                    <i class="fa-solid fa-grip-vertical text-slate-400"></i>
+                                </div>
+                            </div>
+                            <p class="text-[10px] text-slate-500 mt-2 italic">Tip: Click a scenario first, then click its destination slot to match them quickly!</p>
+                        </div>
+
+                        <!-- Drop Targets / Resource Boxes -->
+                        <div class="space-y-3">
+                            <!-- Target 1 -->
+                            <div ondragover="allowResourceDrop(event)" ondrop="handleResourceDrop(event, 'math-lab')" onclick="selectTarget('math-lab')" class="border-2 border-dashed border-slate-300 rounded-xl p-3 text-center transition bg-white" id="tgt-math-lab">
+                                <h4 class="font-black text-slate-900 text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 text-indigo-600 mb-1">
+                                    <i class="fa-solid fa-calculator"></i> Peer Math Lab
+                                </h4>
+                                <div id="math-lab-slot" class="text-xs text-slate-400 italic">Empty Slot</div>
+                            </div>
+
+                            <!-- Target 2 -->
+                            <div ondragover="allowResourceDrop(event)" ondrop="handleResourceDrop(event, 'writing-center')" onclick="selectTarget('writing-center')" class="border-2 border-dashed border-slate-300 rounded-xl p-3 text-center transition bg-white" id="tgt-writing-center">
+                                <h4 class="font-black text-slate-900 text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 text-indigo-600 mb-1">
+                                    <i class="fa-solid fa-pen-nib"></i> Writing Support Center
+                                </h4>
+                                <div id="writing-center-slot" class="text-xs text-slate-400 italic">Empty Slot</div>
+                            </div>
+
+                            <!-- Target 3 -->
+                            <div ondragover="allowResourceDrop(event)" ondrop="handleResourceDrop(event, 'career-center')" onclick="selectTarget('career-center')" class="border-2 border-dashed border-slate-300 rounded-xl p-3 text-center transition bg-white" id="tgt-career-center">
+                                <h4 class="font-black text-slate-900 text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 text-indigo-600 mb-1">
+                                    <i class="fa-solid fa-briefcase"></i> Career Services Division
+                                </h4>
+                                <div id="career-center-slot" class="text-xs text-slate-400 italic">Empty Slot</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            // Clean match trackers
+            state.draggedItemId = null;
+            state.matchedResources = {};
+        }
+
+        // Tap interface for mobile accessibility
+        let selectedScenarioId = null;
+        function selectScenario(id, elem) {
+            selectedScenarioId = id;
+            document.querySelectorAll("#scenarios-container > div").forEach(d => {
+                d.classList.remove("border-indigo-600", "bg-indigo-50");
+            });
+            elem.classList.add("border-indigo-600", "bg-indigo-50");
+            triggerToast("Scenario selected. Choose destination target slot next!", "info");
+        }
+
+        function selectTarget(targetType) {
+            if (selectedScenarioId) {
+                processMatch(selectedScenarioId, targetType);
+                selectedScenarioId = null;
+            } else {
+                triggerToast("Select a student scenario above first!", "warn");
+            }
+        }
+
+        // Standard HTML5 Drag API Support
+        function onResourceDragStart(e) {
+            e.dataTransfer.setData("text", e.target.id);
+            state.draggedItemId = e.target.id;
+        }
+
+        function allowResourceDrop(e) {
+            e.preventDefault();
+        }
+
+        function handleResourceDrop(e, targetType) {
+            e.preventDefault();
+            const id = e.dataTransfer.getData("text") || state.draggedItemId;
+            processMatch(id, targetType);
+        }
+
+        function processMatch(itemId, targetType) {
+            let matches = false;
+            
+            if (itemId === "sc-math" && targetType === "math-lab") matches = true;
+            if (itemId === "sc-essay" && targetType === "writing-center") matches = true;
+            if (itemId === "sc-career" && targetType === "career-center") matches = true;
+
+            const el = document.getElementById(itemId);
+            
+            if (matches) {
+                // Settle item in layout
+                const targetSlot = document.getElementById(`${targetType}-slot`);
+                targetSlot.innerHTML = `<span class="text-emerald-700 font-bold bg-emerald-50 px-2 py-1 border border-emerald-200 rounded-lg inline-block text-[11px] mt-1">${el.innerText}</span>`;
+                targetSlot.className = "text-xs text-slate-800";
+                
+                // Style target container successfully
+                const box = document.getElementById(`tgt-${targetType}`);
+                box.className = "border-2 border-emerald-500 rounded-xl p-3 text-center bg-emerald-50/20";
+                
+                // Hide source
+                el.style.display = "none";
+                state.matchedResources[itemId] = true;
+
+                addXp(100);
+
+                // Verify completing all three
+                if (Object.keys(state.matchedResources).length === 3) {
+                    state.blueprintData.habit3Text = "Sought dynamic study environments, peer tutoring blocks, and career planning sessions early in the curriculum.";
+                }
+            } else {
+                triggerToast("Incorrect resource matching. Read the student challenge again!", "warn");
+            }
+        }
+
+
+        function renderHabit4Multiplier(dom) {
+            dom.innerHTML = `
+                <div class="space-y-4 animate-fade-in">
+                    <div>
+                        <span class="px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded-full font-bold text-xs uppercase tracking-wider">Habit 4: The 2-for-1 Standard</span>
+                        <h2 class="text-2xl font-black text-slate-900 mt-2">Study Hour Calculator & Commuter Life Balancer</h2>
+                        <p class="text-sm text-slate-500 mt-1">For every 1 unit of college class credits you sit in, you are expected to self-study 2 to 3 hours outside of class lectures. Let's see how your credit-load interacts with work obligations.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-3">
+                        <!-- Controls / Sliders -->
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-4">
+                            <!-- Enrolled Credits -->
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="text-xs font-bold text-slate-700">Enrolled Course Credits:</label>
+                                    <span id="label-credits" class="text-sm font-black text-indigo-600">12 units</span>
+                                </div>
+                                <input type="range" min="3" max="18" step="1" value="12" oninput="updateCalculatorState('credits', this.value)" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                                <p class="text-[10px] text-slate-400 mt-0.5">Full-time is usually 12+ units (approx. 4 courses).</p>
+                            </div>
+
+                            <!-- Work Shift Hours -->
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="text-xs font-bold text-slate-700">External Employment Hours/Week:</label>
+                                    <span id="label-work" class="text-sm font-black text-indigo-600">20 hours</span>
+                                </div>
+                                <input type="range" min="0" max="60" step="5" value="20" oninput="updateCalculatorState('workHours', this.value)" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                                <p class="text-[10px] text-slate-400 mt-0.5">Juggling jobs with full load is tough. Let's assess feasibility!</p>
+                            </div>
+
+                            <!-- Average Sleep Target -->
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="text-xs font-bold text-slate-700">Target Sleep Hours Per Night:</label>
+                                    <span id="label-sleep" class="text-sm font-black text-indigo-600">8 hours</span>
+                                </div>
+                                <input type="range" min="5" max="10" step="0.5" value="8" oninput="updateCalculatorState('sleepHours', this.value)" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                                <p class="text-[10px] text-slate-400 mt-0.5">Never sacrifice sleep for study; focus suffers immediately.</p>
+                            </div>
+                        </div>
+
+                        <!-- Outputs and Verdict -->
+                        <div class="bg-indigo-950 text-white rounded-2xl p-5 flex flex-col justify-between shadow-xl relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-900 rounded-full -mr-10 -mt-10 -z-10 opacity-30"></div>
+                            
+                            <div class="space-y-3">
+                                <h4 class="text-xs tracking-wider text-indigo-300 font-bold uppercase">Weekly Commitment Profile</h4>
+                                
+                                <div class="space-y-2">
+                                    <div class="flex justify-between border-b border-indigo-900 pb-1.5">
+                                        <span class="text-xs text-slate-300">Class Block Hours:</span>
+                                        <span class="text-xs font-bold" id="out-class-hours">12 hours</span>
+                                    </div>
+                                    <div class="flex justify-between border-b border-indigo-900 pb-1.5">
+                                        <span class="text-xs text-slate-300">Estimated Study Prep (2x Rule):</span>
+                                        <span class="text-xs font-bold text-amber-300" id="out-study-hours">24 hours</span>
+                                    </div>
+                                    <div class="flex justify-between border-b border-indigo-900 pb-1.5">
+                                        <span class="text-xs text-slate-300">Work Shift & Sleep Dedication:</span>
+                                        <span class="text-xs font-bold" id="out-life-hours">76 hours</span>
+                                    </div>
+                                    <div class="flex justify-between font-bold pt-1">
+                                        <span class="text-xs text-emerald-400">Total Hours Left in Week:</span>
+                                        <span class="text-xs text-emerald-400" id="out-free-hours">56 hours</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Verdict Box Dynamic -->
+                            <div class="mt-4 p-3 rounded-xl" id="calc-verdict-box">
+                                <p class="text-xs font-extrabold" id="calc-verdict-title">Status Check OK</p>
+                                <p class="text-[11px] text-slate-300 leading-relaxed mt-0.5" id="calc-verdict-desc">Evaluating loading balance...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            calculateLoadMetrics();
+        }
+
+        function updateCalculatorState(key, val) {
+            state[key] = Number(val);
+            if (key === 'credits') document.getElementById("label-credits").innerText = `${val} units`;
+            if (key === 'workHours') document.getElementById("label-work").innerText = `${val} hours`;
+            if (key === 'sleepHours') document.getElementById("label-sleep").innerText = `${val} hours`;
+
+            calculateLoadMetrics();
+        }
+
+        function calculateLoadMetrics() {
+            const weekTotalHours = 168;
+            const classHours = state.credits; 
+            const studyNeeded = state.credits * 2; 
+            const sleepTotal = state.sleepHours * 7;
+            const totalWork = state.workHours;
+
+            const spentHours = classHours + studyNeeded + sleepTotal + totalWork;
+            const freeHoursRemaining = weekTotalHours - spentHours;
+
+            document.getElementById("out-class-hours").innerText = `${classHours} hours`;
+            document.getElementById("out-study-hours").innerText = `${studyNeeded} hours`;
+            const lifeAndWorkTotal = totalWork + sleepTotal;
+            document.getElementById("out-life-hours").innerText = `${lifeAndWorkTotal} hours`;
+            document.getElementById("out-free-hours").innerText = `${freeHoursRemaining} hours`;
+
+            const verdictBox = document.getElementById("calc-verdict-box");
+            const verdictTitle = document.getElementById("calc-verdict-title");
+            const verdictDesc = document.getElementById("calc-verdict-desc");
+
+            if (freeHoursRemaining < 20) {
+                // High risk profile
+                verdictBox.className = "mt-4 p-3 rounded-xl bg-rose-950 border border-rose-800 text-rose-300 animate-pulse";
+                verdictTitle.innerText = "⚠️ High Risk Overload Status!";
+                verdictDesc.innerText = "You have very little time left for meals, commuting, and family. Consider reducing course workload or working fewer hours to avoid burnout and failing grades.";
+                state.blueprintData.habit4Text = `Analyzed high-intensity work load (${totalWork}h/wk) alongside credit selection (${classHours} units) and optimized personal limits to enforce at least ${studyNeeded} hours of structured weekly study.`;
+            } else if (freeHoursRemaining < 40) {
+                // Moderate challenge
+                verdictBox.className = "mt-4 p-3 rounded-xl bg-amber-950 border border-amber-800 text-amber-300";
+                verdictTitle.innerText = "⚡ Moderate Balancer Load";
+                verdictDesc.innerText = "A standard community college workload! You have enough time for everything, but scheduling mistakes will cost you. Stick strictly to a planner!";
+                state.blueprintData.habit4Text = `Balanced life commitments with academic load. Committed to ${studyNeeded} hours/week of self-directed homework based on 2:1 standard ratio.`;
+            } else {
+                // Highly manageable
+                verdictBox.className = "mt-4 p-3 rounded-xl bg-emerald-950 border border-emerald-800 text-emerald-300";
+                verdictTitle.innerText = "🟢 Highly Manageable Schedule";
+                verdictDesc.innerText = "Great study window space! You are primed to earn maximum GPAs. Utilize these abundant daytime pockets to study on campus.";
+                state.blueprintData.habit4Text = `Leveraged wide free blocks to establish a robust ${studyNeeded} hours of high-yield exam preparation.`;
+            }
+
+            // Award points for evaluating schedule
+            if (!state.earnedCalculatorPoints) {
+                state.earnedCalculatorPoints = true;
+                addXp(150);
+            }
+        }
+
+
+        function renderHabit5SpacedRepetition(dom) {
+            dom.innerHTML = `
+                <div class="space-y-4 animate-fade-in">
+                    <div>
+                        <span class="px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded-full font-bold text-xs uppercase tracking-wider">Habit 5: Spaced Repetition</span>
+                        <h2 class="text-2xl font-black text-slate-900 mt-2">Beat the Forgetting Curve Simulator</h2>
+                        <p class="text-sm text-slate-500 mt-1">If you study a concept once, memory retention drops to under 30% within a week. Retesting at small intervals pushes memory back up, cementing it permanently.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                        <!-- Chart Area / Simulation -->
+                        <div class="bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-2 flex justify-between">
+                                    <span>Mental Memory Retention Status</span>
+                                    <span class="text-indigo-600 font-bold" id="calc-retention-percent">100%</span>
+                                </h4>
+                                
+                                <div class="relative bg-slate-100 h-40 rounded-lg overflow-hidden flex items-end">
+                                    <!-- Memory Level Water Visualizer bar -->
+                                    <div id="memory-level-bar" class="w-full bg-gradient-to-t from-indigo-500 to-emerald-400 transition-all duration-500" style="height: 100%;"></div>
+                                    <div class="absolute inset-x-0 bottom-4 text-center">
+                                        <p id="sim-day-indicator" class="text-xs font-extrabold text-slate-800 uppercase">Day 0: Initial Lecture Block</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p class="text-[10px] text-slate-400 mt-2 italic">Notice how memory rapidly decays as days progress unless you click the Space Repetition Review trigger.</p>
+                        </div>
+
+                        <!-- Action Sandbox Controls -->
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-2">Simulate Passage of Time</h4>
+                                <p class="text-xs text-slate-600 mb-3">Advance the days to watch the memory decay, then intervene to boost memory!</p>
+                                
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button onclick="advanceSimDay()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow transition">
+                                        ⏩ Advance Day
+                                    </button>
+                                    <button onclick="retriggerSpacedReview()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow transition">
+                                        ⚡ Spaced Review Boost
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="bg-indigo-50 border border-indigo-100 p-3 rounded-lg mt-3">
+                                <span class="text-[10px] font-bold text-indigo-700 uppercase block tracking-widest">Master Coach Carter's Strategy:</span>
+                                <p class="text-xs text-slate-700 leading-relaxed mt-0.5" id="spaced-strategy-msg">
+                                    Click <strong>Advance Day</strong> to see retention start to fade as weeks advance without student active recall practice.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            // Reset simulator stats on tab load
+            state.forgettingDay = 0;
+            state.retention = 100;
+            state.spacedActionTaken = false;
+            updateSimulatorView();
+        }
+
+        function advanceSimDay() {
+            if (state.forgettingDay < 7) {
+                state.forgettingDay++;
+                // Decay memory formula
+                const decayAmount = 14 + Math.random() * 8;
+                state.retention = Math.max(10, Math.round(state.retention - decayAmount));
+                
+                updateSimulatorView();
+
+                if (state.retention <= 45 && !state.spacedActionTaken) {
+                    document.getElementById("spaced-strategy-msg").innerHTML = `⚠️ <strong>Memory fading fast!</strong> Your retention is critical. Run a quick 5-minute <strong>Spaced Review Boost</strong> now before it drops off completely!`;
+                }
+            } else {
+                triggerToast("Simulator Week over. Reset your cycle or start the Spaced Review Boost!", "info");
+            }
+        }
+
+        function retriggerSpacedReview() {
+            state.retention = 100;
+            state.spacedActionTaken = true;
+            updateSimulatorView();
+            document.getElementById("spaced-strategy-msg").innerHTML = `🎉 <strong>Sensational!</strong> Reviewing key flashcards or summaries for just 5 minutes restored retention to 100%. This is how top GPAs are built!`;
+            
+            if (!state.earnedSpacedPoints) {
+                state.earnedSpacedPoints = true;
+                addXp(150);
+                state.blueprintData.habit5Text = "Structured spaced retention intervals (Day 1, Day 3, Day 7) to block memory decay and crush long-term final exam formats.";
+            }
+        }
+
+        function updateSimulatorView() {
+            document.getElementById("memory-level-bar").style.height = `${state.retention}%`;
+            document.getElementById("calc-retention-percent").innerText = `${state.retention}%`;
+            document.getElementById("sim-day-indicator").innerText = `Day ${state.forgettingDay}: Academic Tracker`;
+            
+            // Alter bar gradient based on memory health
+            const bar = document.getElementById("memory-level-bar");
+            if (state.retention < 40) {
+                bar.className = "w-full bg-gradient-to-t from-red-600 to-rose-400 transition-all duration-500";
+            } else if (state.retention < 70) {
+                bar.className = "w-full bg-gradient-to-t from-amber-500 to-yellow-400 transition-all duration-500";
+            } else {
+                bar.className = "w-full bg-gradient-to-t from-indigo-500 to-emerald-400 transition-all duration-500";
+            }
+        }
+
+
+        function renderActionBlueprint(dom) {
+            dom.innerHTML = `
+                <div class="space-y-4 animate-fade-in">
+                    <div>
+                        <span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full font-bold text-xs uppercase tracking-wider">Active Output</span>
+                        <h2 class="text-2xl font-black text-slate-900 mt-2">Your Personalized Student Success Blueprint</h2>
+                        <p class="text-sm text-slate-500 mt-1">Review, refine, and customize your study roadmap based on your interactive simulations and coaching inputs below.</p>
+                    </div>
+
+                    <!-- Customizable Blueprint Board Form -->
+                    <div id="blueprint-doc" class="bg-white border border-slate-300 shadow-xl rounded-2xl p-6 space-y-4 text-slate-800">
+                        <div class="border-b border-slate-200 pb-3 flex justify-between items-center">
+                            <div>
+                                <h3 class="text-base font-black text-slate-900">MASTER ACADEMIC PLAYBOOK</h3>
+                                <p class="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold">Prepared for incoming Community College Leaders</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded-full" id="blueprint-profile-tag">Profile: Strategic Scholar</span>
+                            </div>
+                        </div>
+
+                        <!-- Editable Fields for customization -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Field 1 -->
+                            <div class="space-y-1">
+                                <label class="text-xs font-black text-indigo-600 block uppercase tracking-wider">PILLAR 1: Time Block Objective</label>
+                                <textarea id="bp-field-1" class="w-full text-xs p-2.5 border rounded-lg bg-slate-50 focus:bg-white text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none" rows="2"></textarea>
+                            </div>
+
+                            <!-- Field 2 -->
+                            <div class="space-y-1">
+                                <label class="text-xs font-black text-indigo-600 block uppercase tracking-wider">PILLAR 2: Active Recall Plan</label>
+                                <textarea id="bp-field-2" class="w-full text-xs p-2.5 border rounded-lg bg-slate-50 focus:bg-white text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none" rows="2"></textarea>
+                            </div>
+
+                            <!-- Field 3 -->
+                            <div class="space-y-1">
+                                <label class="text-xs font-black text-indigo-600 block uppercase tracking-wider">PILLAR 3: Syllabus Resource Mapping</label>
+                                <textarea id="bp-field-3" class="w-full text-xs p-2.5 border rounded-lg bg-slate-50 focus:bg-white text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none" rows="2"></textarea>
+                            </div>
+
+                            <!-- Field 4 -->
+                            <div class="space-y-1">
+                                <label class="text-xs font-black text-indigo-600 block uppercase tracking-wider">PILLAR 4: Standard Load Multiplier Commitment</label>
+                                <textarea id="bp-field-4" class="w-full text-xs p-2.5 border rounded-lg bg-slate-50 focus:bg-white text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none" rows="2"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="text-xs font-black text-indigo-600 block uppercase tracking-wider">PILLAR 5: Spaced Repetition Practice Intervals</label>
+                            <textarea id="bp-field-5" class="w-full text-xs p-2.5 border rounded-lg bg-slate-50 focus:bg-white text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Blueprint Actions -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-100 border border-slate-200 p-3 rounded-xl">
+                        <span class="text-xs text-slate-600 font-medium">Feel free to customize the action text areas above, then export your finalized launch document.</span>
+                        <div class="flex space-x-2">
+                            <button onclick="copyBlueprintToClipboard()" class="px-4 py-2 bg-slate-800 text-white font-bold text-xs rounded-lg hover:bg-slate-900 transition flex items-center gap-1.5 shadow-sm">
+                                <i class="fa-solid fa-copy"></i> Copy to Notes
+                            </button>
+                            <button onclick="downloadBlueprint()" class="px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-lg hover:bg-emerald-700 transition flex items-center gap-1.5 shadow-sm">
+                                <i class="fa-solid fa-download"></i> Download Draft
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Populate document values with user inputs
+            document.getElementById("blueprint-profile-tag").innerText = `Profile: ${state.blueprintData.diagnostic || "Undiscovered Explorer"}`;
+            
+            // Fallbacks for empty states in case students skip tabs
+            document.getElementById("bp-field-1").value = state.blueprintData.habit1Text || "Scheduled dedicated 'Study Blocks' across daytime slots to ensure academic homework doesn't conflict with work schedules.";
+            document.getElementById("bp-field-2").value = state.blueprintData.habit2Text || "Committed to active self-quizzing with structured flashcards over passive text re-reading.";
+            document.getElementById("bp-field-3").value = state.blueprintData.habit3Text || "Sought dynamic study environments, peer tutoring blocks, and career planning sessions early in the curriculum.";
+            document.getElementById("bp-field-4").value = state.blueprintData.habit4Text || "Balanced life commitments with academic load. Committed to standard 2-for-1 ratio outside of scheduled lectures.";
+            document.getElementById("bp-field-5").value = state.blueprintData.habit5Text || "Structured spaced retention intervals (Day 1, Day 3, Day 7) to block memory decay and crush long-term final exam formats.";
+
+            if (!state.earnedBlueprintPoints) {
+                state.earnedBlueprintPoints = true;
+                addXp(200);
+            }
+        }
+
+        // Clip board implementation fallback
+        function copyBlueprintToClipboard() {
+            // Read active text fields
+            const f1 = document.getElementById("bp-field-1").value;
+            const f2 = document.getElementById("bp-field-2").value;
+            const f3 = document.getElementById("bp-field-3").value;
+            const f4 = document.getElementById("bp-field-4").value;
+            const f5 = document.getElementById("bp-field-5").value;
+
+            const textOutput = `--- MASTER STUDY PLAYBOOK SUCCESS BLUEPRINT ---\n\n` +
+                               `Time Box Objective:\n${f1}\n\n` +
+                               `Active Recall Plan:\n${f2}\n\n` +
+                               `Syllabus Resource Mapping:\n${f3}\n\n` +
+                               `Standard Load Multiplier:\n${f4}\n\n` +
+                               `Spaced Repetition Practice:\n${f5}\n\n` +
+                               `Prepared via CC Success Seminar Launchpad.`;
+
+            // Create hidden dynamic field to execute reliable fallback
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = textOutput;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+
+            triggerToast("Copied to clipboard! Ready to paste into study notes.", "success");
+        }
+
+        function downloadBlueprint() {
+            // Build temporary element for download action
+            const f1 = document.getElementById("bp-field-1").value;
+            const f2 = document.getElementById("bp-field-2").value;
+            const f3 = document.getElementById("bp-field-3").value;
+            const f4 = document.getElementById("bp-field-4").value;
+            const f5 = document.getElementById("bp-field-5").value;
+
+            const fullText = `--- MY COMMUNITY COLLEGE SUCCESS BLUEPRINT ---\n\n` +
+                             `1. TIME BOXING GOAL:\n${f1}\n\n` +
+                             `2. ACTIVE RECALL PLAN:\n${f2}\n\n` +
+                             `3. CAMPUS RESOURCE TARGETS:\n${f3}\n\n` +
+                             `4. STUDY LOAD RATIO COMMITMENT:\n${f4}\n\n` +
+                             `5. SPACED REPETITION CYCLE:\n${f5}\n\n` +
+                             `Good luck on your upcoming semester! You got this.`;
+
+            const blob = new Blob([fullText], { type: "text/plain" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "My_CC_Study_Blueprint.txt";
+            link.click();
+            triggerToast("Text file blueprint downloaded successfully!", "success");
+        }
+
+
+        function renderOutroGraduation(dom) {
+            dom.innerHTML = `
+                <div class="space-y-6 text-center animate-fade-in py-6">
+                    <div class="max-w-md mx-auto">
+                        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 text-4xl mb-4 shadow-md">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                        <h2 class="text-3xl font-black text-slate-900 leading-tight">Masterclass Completed!</h2>
+                        <p class="text-sm text-slate-500 mt-2">You earned a grand total of <strong class="text-indigo-600 font-bold" id="final-xp">${state.score} XP</strong> Coach Points! Your college roadmap is primed with premium study blueprints.</p>
+                    </div>
+
+                    <!-- Graduation badge visual card -->
+                    <div class="bg-gradient-to-tr from-indigo-900 via-indigo-950 to-slate-900 text-white rounded-2xl p-6 max-w-lg mx-auto shadow-2xl relative overflow-hidden">
+                        <div class="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                        <span class="text-[10px] tracking-widest text-emerald-400 font-extrabold uppercase block">Official Certificate Badge</span>
+                        <h3 class="text-lg font-black text-white mt-1">CC ACADEMIC COACH CHAMPION</h3>
+                        <p class="text-xs text-indigo-200 mt-1 max-w-sm mx-auto leading-relaxed">
+                            Issued to academic learners holding dedicated study ratios, prioritized active recall methods, syllabus resources, and spaced repetition schedules.
+                        </p>
+                        
+                        <div class="flex justify-center items-center gap-2 mt-6">
+                            <span class="text-[11px] bg-indigo-800 text-white font-mono px-3 py-1 rounded-full border border-indigo-700">ID: SEC-2026-ACT</span>
+                            <span class="text-[11px] bg-emerald-500/10 text-emerald-300 font-mono px-3 py-1 rounded-full border border-emerald-500/20">STATUS: VERIFIED</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button onclick="state.currentStep = 0; renderWorkspace(); updateProgressUi();" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg shadow-lg transition">
+                            <i class="fa-solid fa-rotate-right"></i> Restart Lesson
+                        </button>
+                    </div>
+                </div>
+            `;
+            // Keep final scoreboard showing correctly
+            document.getElementById("final-xp").innerText = `${state.score} XP`;
+        }
+
+        // --- ONLOAD INITIALIZATION ---
+        window.onload = function() {
+            // First step launch
+            renderWorkspace();
+            updateProgressUi();
+        }
+    </script>
+</body>
+</html>
