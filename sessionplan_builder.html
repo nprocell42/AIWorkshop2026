@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TCC SI Session Planner & Prompt Generator</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .dark ::-webkit-scrollbar-track {
+      background: #1f2937;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .dark ::-webkit-scrollbar-thumb {
+      background: #4b5563;
+    }
+    @media print {
+      body { background: white !important; color: black !important; }
+      .no-print { display: none !important; }
+      .print-full-width { width: 100% !important; max-width: 100% !important; margin: 0 !important; box-shadow: none !important; }
+    }
+    .theme-transition {
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+  </style>
+</head>
+<body class="h-full bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 font-sans theme-transition flex flex-col">
+
+  <!-- TOP HEADER -->
+  <header class="no-print bg-primary-900 text-white shadow-md px-6 py-4 theme-transition">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-sky-500 p-2.5 rounded-lg text-primary-900">
+          <i class="fa-solid fa-graduation-cap text-2xl animate-pulse"></i>
+        </div>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight">TCC Supplemental Instruction</h1>
+          <p class="text-xs text-sky-200">Interactive Strategy Planner, Prompt Exporter & DOCX Engine</p>
+        </div>
+      </div>
+      
+      <!-- Accessibility & Theme Controls -->
+      <div class="flex items-center gap-3">
+        <!-- Text Size Buttons -->
+        <div class="flex bg-primary-800 rounded-lg p-1 border border-primary-700" role="group" aria-label="Text size controls">
+          <button onclick="changeFontSize('small')" class="px-2.5 py-1 text-xs rounded hover:bg-primary-700 transition" title="Small Text">A-</button>
+          <button onclick="changeFontSize('base')" class="px-2.5 py-1 text-xs rounded bg-primary-600 font-bold transition" title="Default Text">A</button>
+          <button onclick="changeFontSize('large')" class="px-2.5 py-1 text-xs rounded hover:bg-primary-700 transition" title="Large Text">A+</button>
+        </div>
+
+        <!-- High Contrast Mode Toggle -->
+        <button onclick="toggleHighContrast()" id="contrastBtn" class="px-3 py-1.5 bg-primary-800 hover:bg-primary-700 rounded-lg text-sm border border-primary-700 flex items-center gap-1.5 transition" title="Toggle High Contrast">
+          <i class="fa-solid fa-circle-half-stroke"></i>
+          <span class="hidden sm:inline text-xs">Contrast</span>
+        </button>
+
+        <!-- Dark/Light Theme Button -->
+        <button onclick="toggleTheme()" class="p-2 bg-primary-800 hover:bg-primary-700 rounded-full text-lg border border-primary-700 transition" aria-label="Toggle Theme Mode">
+          <i id="themeIcon" class="fa-solid fa-moon text-sky-300"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main id="app-container" class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden text-base">
+    
+    <!-- LEFT CONTROL PANEL (FORMS & INPUTS) -->
+    <section class="no-print lg:col-span-6 flex flex-col gap-6 overflow-y-auto pr-0 lg:pr-2 h-full">
+      
+      <!-- STEP 1: GENERAL METADATA -->
+      <div class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 theme-transition">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="w-7 h-7 bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 rounded-full flex items-center justify-center font-bold text-sm">1</span>
+          <h2 class="text-lg font-bold">Session Configuration</h2>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="discipline" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Discipline/Subject</label>
+            <select id="discipline" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition" onchange="onDisciplineChange()">
+              <option value="Biology (Anatomy & Physiology)">Biology (Anatomy & Physiology)</option>
+              <option value="Chemistry (General/Organic)">Chemistry (General/Organic)</option>
+              <option value="Mathematics (Algebra/Calculus)">Mathematics (Algebra/Calculus)</option>
+              <option value="US History">US History</option>
+              <option value="Accounting/Business">Accounting/Business</option>
+              <option value="Custom/Other">Custom / Other Course</option>
+            </select>
+          </div>
+          <div>
+            <label for="session-topics" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Session Topic/Concepts</label>
+            <input type="text" id="session-topics" value="Blood Flow of the Heart" placeholder="e.g., Derivative Rules, Ionic Bonds" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition" oninput="compileObjective()">
+          </div>
+          <div>
+            <label for="delivery-mode" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Delivery Mode</label>
+            <select id="delivery-mode" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition">
+              <option value="In-Person (On-Campus Session)">In-Person (On-Campus)</option>
+              <option value="Virtual (Microsoft Teams Session)">Virtual (Microsoft Teams)</option>
+              <option value="Hybrid Format">Hybrid Format</option>
+            </select>
+          </div>
+          <div>
+            <label for="turnout" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Expected Turnout (Scale)</label>
+            <select id="turnout" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition">
+              <option value="Low Turnout (1-3 students - Highly focused individual strategies)">Low Turnout (1-3 students)</option>
+              <option value="Medium Turnout (4-10 students - Balanced active clusters)" selected>Medium Turnout (4-10 students)</option>
+              <option value="High Turnout (11+ students - Large group interactive modes)">High Turnout (11+ students)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: OBJECTIVE BUILDER (ABCD METHOD) -->
+      <div class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 theme-transition">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 rounded-full flex items-center justify-center font-bold text-sm">2</span>
+            <h2 class="text-lg font-bold">Interactive ABCD Objective Builder</h2>
+          </div>
+          <button onclick="autogenerateABCD()" class="text-xs text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1 font-semibold">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Autogenerate Objective
+          </button>
+        </div>
+        
+        <div class="space-y-4">
+          <!-- A: Audience -->
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+              <span class="text-red-500 font-bold">A</span>udience (Who?)
+            </label>
+            <input type="text" id="obj-audience" value="Students will be able to" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-sky-500 transition" oninput="compileObjective()">
+          </div>
+          <!-- B: Behavior -->
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <span class="text-orange-500 font-bold">B</span>ehavior (Bloom's Verb)
+              </label>
+              <select id="bloom-level" class="text-xs bg-slate-100 dark:bg-slate-700 border-none outline-none rounded p-0.5 cursor-pointer" onchange="onBloomLevelChange()">
+                <option value="Remember">Remember (Recall facts)</option>
+                <option value="Understand">Understand (Grasp meaning)</option>
+                <option value="Apply">Apply (Execute setups)</option>
+                <option value="Analyze" selected>Analyze (Differentiate & breakdown)</option>
+                <option value="Evaluate">Evaluate (Assess & critique)</option>
+                <option value="Create">Create (Assemble new models)</option>
+              </select>
+            </div>
+            <div class="flex gap-2">
+              <select id="obj-behavior-select" class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-sky-500 transition" onchange="document.getElementById('obj-behavior-text').value = this.value; compileObjective();">
+                <!-- Programmatic populate -->
+              </select>
+              <input type="text" id="obj-behavior-text" placeholder="specific action behavior" class="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-sky-500 transition" oninput="compileObjective()">
+            </div>
+          </div>
+          <!-- C: Condition -->
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+              <span class="text-green-500 font-bold">C</span>ondition (Given what resources/limits?)
+            </label>
+            <input type="text" id="obj-condition" placeholder="e.g., given a labeled diagram" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-sky-500 transition" oninput="compileObjective()">
+          </div>
+          <!-- D: Degree -->
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+              <span class="text-indigo-500 font-bold">D</span>egree (How well?)
+            </label>
+            <input type="text" id="obj-degree" placeholder="e.g., with 90% accuracy" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-sky-500 transition" oninput="compileObjective()">
+          </div>
+
+          <!-- Stitched Output -->
+          <div class="mt-4 p-3.5 bg-slate-100 dark:bg-slate-900/60 rounded-lg border border-slate-200 dark:border-slate-700">
+            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1">Stitched ABCD Learning Objective:</span>
+            <p id="stitched-objective-text" class="text-sm font-medium italic text-primary-700 dark:text-sky-300">Students will be able to...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: SI STRATEGIES (STRATEGY CARD SELECTOR) -->
+      <div class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 theme-transition">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 rounded-full flex items-center justify-center font-bold text-sm">3</span>
+            <h2 class="text-lg font-bold">Strategy Card Selector</h2>
+          </div>
+          <button onclick="randomizeStrategies()" class="text-xs text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1 font-semibold">
+            <i class="fa-solid fa-shuffle"></i> Randomize Cards
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Opener Selector -->
+          <div>
+            <label for="select-opener" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Session Opener Activity (5-10 mins)</label>
+            <select id="select-opener" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-sky-500 transition" onchange="onStrategySelect('opener')"></select>
+            <p id="opener-desc" class="text-xs mt-1 text-slate-500 dark:text-slate-400 italic"></p>
+          </div>
+
+          <!-- Main Activity 1 Selector -->
+          <div>
+            <label for="select-main1" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Main Activity 1 (15-20 mins)</label>
+            <select id="select-main1" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-sky-500 transition" onchange="onStrategySelect('main1')"></select>
+            <p id="main1-desc" class="text-xs mt-1 text-slate-500 dark:text-slate-400 italic"></p>
+          </div>
+
+          <!-- Main Activity 2 Selector -->
+          <div>
+            <label for="select-main2" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Main Activity 2 (15-20 mins)</label>
+            <select id="select-main2" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-sky-500 transition" onchange="onStrategySelect('main2')"></select>
+            <p id="main2-desc" class="text-xs mt-1 text-slate-500 dark:text-slate-400 italic"></p>
+          </div>
+
+          <!-- Backpocket/Alternative Selector -->
+          <div>
+            <label for="select-backpocket" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Backpocket / Alternative Activity</label>
+            <select id="select-backpocket" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-sky-500 transition" onchange="onStrategySelect('backpocket')"></select>
+            <p id="backpocket-desc" class="text-xs mt-1 text-slate-500 dark:text-slate-400 italic"></p>
+          </div>
+
+          <!-- Closer Selector -->
+          <div>
+            <label for="select-closer" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Session Closer Activity (5-10 mins)</label>
+            <select id="select-closer" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-sky-500 transition" onchange="onStrategySelect('closer')"></select>
+            <p id="closer-desc" class="text-xs mt-1 text-slate-500 dark:text-slate-400 italic"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4: GENERATION BUTTONS -->
+      <div class="flex flex-col gap-3">
+        <!-- AI Generator with Direct Response -->
+        <button onclick="generatePlanWithAI()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold p-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm tracking-wide">
+          <i class="fa-solid fa-wand-magic-sparkles animate-pulse"></i> Generate Interactive Plan with Gemini AI
+        </button>
+
+        <!-- Prompt Copy/Exporter -->
+        <button onclick="copySystemPrompt()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold p-3 rounded-xl border border-slate-600 transition flex items-center justify-center gap-2 text-sm tracking-wide">
+          <i class="fa-solid fa-copy"></i> Export Custom Prompt for External LLM
+        </button>
+      </div>
+
+    </section>
+
+    <!-- RIGHT CANVASES (PREVIEW & ACCESSIBILITY DESK) -->
+    <div class="lg:col-span-6 flex flex-col gap-6 overflow-y-auto h-full">
+      
+      <!-- INLINE ACTIVE COMPONENT VIEW (INTERACTIVE CANVAS) -->
+      <section class="flex-1 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 theme-transition flex flex-col min-h-[400px]">
+        
+        <!-- Canvas Header -->
+        <div class="no-print border-b border-slate-200 dark:border-slate-700 px-5 py-3 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 rounded-t-xl theme-transition">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 bg-green-500 rounded-full animate-ping"></span>
+            <h3 class="font-bold text-sm text-slate-600 dark:text-slate-300">Live Active Session Plan Workspace</h3>
+          </div>
+          <div class="flex gap-2">
+            <button id="download-docx-btn" onclick="downloadAsDocx()" class="hidden p-1.5 px-3 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 rounded-lg text-xs font-semibold flex items-center gap-1 transition">
+              <i class="fa-solid fa-file-word"></i> Download Word Doc
+            </button>
+            <button onclick="window.print()" class="p-1.5 px-3 bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-300 hover:bg-sky-100 rounded-lg text-xs font-semibold flex items-center gap-1 transition">
+              <i class="fa-solid fa-print"></i> Print
+            </button>
+            <button onclick="copyGeneratedPlan()" class="p-1.5 px-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1 transition">
+              <i class="fa-solid fa-copy"></i> Copy
+            </button>
+          </div>
+        </div>
+
+        <!-- Canvas Body (Prints perfectly) -->
+        <div id="output-canvas" class="flex-1 p-6 print-full-width overflow-y-auto select-text prose dark:prose-invert max-w-none">
+          <div class="text-center py-12 text-slate-400 dark:text-slate-500 space-y-3">
+            <i class="fa-regular fa-calendar-plus text-5xl"></i>
+            <p class="font-medium text-sm">Generate your session plan or Prompt to start workspace rendering.</p>
+            <p class="text-xs text-slate-400">Your stitched metadata, strategy selections, and objectives are ready to be utilized.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ADA ACCESSIBILITY CHECKLIST SIDEBAR -->
+      <section class="no-print bg-slate-100 dark:bg-slate-800/40 p-5 rounded-xl border border-slate-200 dark:border-slate-700 theme-transition">
+        <h3 class="font-bold text-sm tracking-wide text-slate-500 dark:text-slate-400 uppercase mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-universal-access text-sky-500"></i> ADA Accessibility Session Planner
+        </h3>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <label class="flex items-start gap-2.5 p-2 bg-white dark:bg-slate-800 rounded-lg shadow-xs cursor-pointer border border-slate-200 dark:border-slate-700 transition hover:bg-slate-50">
+            <input type="checkbox" id="ada-1" class="mt-0.5 accent-sky-500" checked>
+            <div>
+              <span class="font-bold block">Keyboard Navigable</span>
+              <span class="text-slate-400 dark:text-slate-500">The activities do not require complex mouse drags (alternatives like keyboard inputs/polls are set up).</span>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-2.5 p-2 bg-white dark:bg-slate-800 rounded-lg shadow-xs cursor-pointer border border-slate-200 dark:border-slate-700 transition hover:bg-slate-50">
+            <input type="checkbox" id="ada-2" class="mt-0.5 accent-sky-500" checked>
+            <div>
+              <span class="font-bold block">Contrast Compliance</span>
+              <span class="text-slate-400 dark:text-slate-500">Visual elements, colored whiteboard text, and handouts meet high contrast standards.</span>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-2.5 p-2 bg-white dark:bg-slate-800 rounded-lg shadow-xs cursor-pointer border border-slate-200 dark:border-slate-700 transition hover:bg-slate-50">
+            <input type="checkbox" id="ada-3" class="mt-0.5 accent-sky-500" checked>
+            <div>
+              <span class="font-bold block">Alt Text & Image Descriptions</span>
+              <span class="text-slate-400 dark:text-slate-500">All diagrams, tables, and graphs include explicit written alt-text explanations.</span>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-2.5 p-2 bg-white dark:bg-slate-800 rounded-lg shadow-xs cursor-pointer border border-slate-200 dark:border-slate-700 transition hover:bg-slate-50">
+            <input type="checkbox" id="ada-4" class="mt-0.5 accent-sky-500" checked>
+            <div>
+              <span class="font-bold block">Screen-Reader Auditory Cues</span>
+              <span class="text-slate-400 dark:text-slate-500">All text content on handouts is read aloud during group review (VARK Aural integration).</span>
+            </div>
+          </label>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- CUSTOM MODAL TOAST (No native browser alerts used) -->
+  <div id="toast-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-xl max-w-sm w-full mx-4 border border-slate-200 dark:border-slate-700 text-center">
+      <div id="toast-icon" class="text-4xl text-sky-500 mb-3">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <h4 id="toast-title" class="text-lg font-bold mb-1">Success</h4>
+      <p id="toast-message" class="text-sm text-slate-500 dark:text-slate-400 mb-4">Action completed successfully.</p>
+      <button onclick="closeToast()" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-6 rounded-lg text-sm transition">
+        Okay
+      </button>
+    </div>
+  </div>
+
+  <!-- BOTTOM STATUS BAR -->
+  <footer class="no-print bg-slate-100 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 text-xs px-6 py-3 theme-transition">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+      <div class="flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
+        <i class="fa-solid fa-code"></i>
+        <span>Designed dynamically for TCC Supplemental Instruction programs.</span>
+      </div>
+      <div class="flex gap-4 text-slate-500 dark:text-slate-400">
+        <span>Model Support: <strong class="text-sky-600 dark:text-sky-400">gemini-2.5-flash-preview-09-2025</strong></span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- STRATEGY SELECTOR & LOGIC SCRIPT -->
+  <script>
+    const apiKey = ""; 
+    let currentRawPlanMarkdown = ""; // Stores raw AI markdown for DOCX export
+
+    // Complete Strategy Deck representing every single card from the TCC strategy card deck
+    const STRATEGY_DECK = {
+      openers: [
+        { name: "3:2:1", desc: "List 3 topics you can teach, 2 topics you don't understand, and 1 potential exam question.", vark: "R/W, A", level: "Understand" },
+        { name: "Adjective Annie", desc: "Introduce names with an alliterative content adjective (e.g. 'Prokaryote Pete').", vark: "V, A", level: "Remember" },
+        { name: "Explain Like I'm Five (ELI5)", desc: "Explain a complex concept on a very basic level as if explaining to a 5-year-old child.", vark: "A, R/W", level: "Understand" },
+        { name: "Start, Stop, Continue", desc: "Reflect on study habits: what to start, what to stop, and what to keep doing.", vark: "R/W", level: "Evaluate" },
+        { name: "Two Truths and a Lie", desc: "List two accurate statements and one false statement about a concept, group guesses the lie.", vark: "A, V", level: "Analyze" },
+        { name: "Stop Light Comfort Check", desc: "Color code comfort on topics: Green (Excellent), Yellow (Needs practice), Red (Confused).", vark: "V, K", level: "Evaluate" },
+        { name: "2 Dollar Summary", desc: "Summarize the lesson in exactly 20 words. Each word costs 10 cents; total must equal $2.00.", vark: "R/W", level: "Create" },
+        { name: "10 Words or Less", desc: "Define/describe a main topic in ten words or less. Excellent for consolidating logic.", vark: "R/W, A", level: "Analyze" },
+        { name: "Best/Worst", desc: "Each person shares their best and worst moments from the previous week.", vark: "A", level: "Understand" },
+        { name: "Caption This", desc: "Print out photos/memes from course and have students caption them accurately.", vark: "V, R/W", level: "Understand" },
+        { name: "Elevator Pitch", desc: "Write a persuasive, brief 1-minute speech explaining a complex concept to an audience.", vark: "A", level: "Apply" },
+        { name: "Favorites Spin Wheel", desc: "Put random icebreaker or course categories on a wheel to spin and share.", vark: "V, A", level: "Remember" },
+        { name: "Funds of Knowledge", desc: "Have students share topics outside the course that they are extremely knowledgeable about.", vark: "A", level: "Remember" },
+        { name: "Heroes", desc: "Name three historical or personal heroes you admire and why.", vark: "A, R/W", level: "Understand" },
+        { name: "High, Low, Hope", desc: "Share a high point, a low point from last week, and a hope for the coming week.", vark: "A", level: "Understand" },
+        { name: "Hot Take", desc: "Share a non-academic controversial 'hot take' to spark healthy debate and dialogue.", vark: "A", level: "Evaluate" },
+        { name: "If I Was...", desc: "Finish the sentence stem 'If I was a [category], I would be [item] because...'", vark: "A", level: "Apply" },
+        { name: "Index Card Icebreaker", desc: "Write one unique thing about yourself, mix cards, and guess which student wrote what.", vark: "R/W", level: "Remember" },
+        { name: "Jitter Bugs", desc: "List out what is making you nervous about the upcoming exam and brainstorm solutions.", vark: "R/W", level: "Analyze" },
+        { name: "K-W-L Chart", desc: "Stitch columns for what we Know, what we Want to know, and what we Learned.", vark: "R/W, V", level: "Analyze" }
+      ],
+      mains: [
+        { name: "Scribe Wars", desc: "Teams compete to write as much accurate information as possible on the board in a set timeframe.", vark: "K, R/W", level: "Remember" },
+        { name: "Potion Bottles", desc: "Stack terms on cards. Eliminate wrong choices based on hints. Poison bottles require an antidote write-up.", vark: "V, A, R/W", level: "Analyze" },
+        { name: "Catastrophe Concept Mapping", desc: "Fill board with terms. Draw lines connecting two terms, and verbally defend the connection.", vark: "V, K, A", level: "Analyze" },
+        { name: "Divide and Conquer", desc: "Divide up a reading assignment, have pairs summarize and teach their sections to the larger group.", vark: "R/W, A", level: "Understand" },
+        { name: "Frayer Model Construction", desc: "A four-square chart defining a key term with attributes, examples, and non-examples.", vark: "V, R/W", level: "Understand" },
+        { name: "Pass the Marker", desc: "Leader writes steps. One student does step one, then chooses next student for step two.", vark: "K, V", level: "Apply" },
+        { name: "Objection! Debate", desc: "Two students argue opposite sides of a concept; the rest act as the jury and choose sides.", vark: "A", level: "Evaluate" },
+        { name: "Right or Wrong Counterparts", desc: "Match accurate with deliberately inaccurate formulas, then defend and select the correct one.", vark: "V, R/W", level: "Analyze" },
+        { name: "G.U.E.S.S. Method", desc: "Staged approach for problem solving: Given, Unknown, Equation, Set-up, Solve.", vark: "R/W, V", level: "Apply" },
+        { name: "Vocabulary Speed Dating", desc: "Line up vocab terms and definitions. Rotate and pair the corresponding partners.", vark: "K, A", level: "Remember" },
+        { name: "Clockwork Math", desc: "Groups work overlapping problems, then verify and critique adjacent group's work.", vark: "V, R/W", level: "Apply" },
+        { name: "Alien Auction", desc: "Teams prepare a quick pitch to sell a course topic to a space alien (SI Leader) using diagrams.", vark: "V, A", level: "Create" },
+        { name: "Around the World", desc: "Students challenge each other down the line answering questions. Winner challenges next.", vark: "A", level: "Remember" },
+        { name: "Battle Bracket", desc: "Rank and match course structures or historical events tournament-style to find the most vital.", vark: "V, A", level: "Evaluate" },
+        { name: "Breaking Down the Problem", desc: "Highlight word problems line-by-line in different colors representing variables, then solve.", vark: "V, R/W", level: "Apply" },
+        { name: "Build a Number / Event", desc: "Arrange elements, operation symbols, or events to establish cause-and-effect relationships.", vark: "K, V", level: "Create" },
+        { name: "Jigsaw Expertise", desc: "Split into expert groups over a topic. Shuffle and have experts teach their new clusters.", vark: "R/W, A", level: "Analyze" },
+        { name: "Marker Talk", desc: "Silent chalkboard/whiteboard brain-dump where students reply, draw connections, and add question marks.", vark: "V, K", level: "Analyze" },
+        { name: "Museum Walk", desc: "Create playdoh or illustrative models representing subtopics. Peers walk around to analyze.", vark: "K, V", level: "Analyze" },
+        { name: "Objection! Courtroom", desc: "Two students stand in opposite corners of the room defending the correct vs incorrect formulas/concepts.", vark: "A", level: "Evaluate" },
+        { name: "SI Robot", desc: "Teams write precise algorithmic instructions. The 'robot' (Leader) executes steps literally.", vark: "K, R/W", level: "Analyze" },
+        { name: "Spot the Error", desc: "Intentionally display a solved problem with errors. Challenge students to isolate mistakes.", vark: "V, A", level: "Analyze" },
+        { name: "1 vs 100", desc: "One student stands in front of the screen. The pool stands in the back moving to quadrants (A, B, C, D).", vark: "K, V", level: "Remember" },
+        { name: "Dungeon Keeper Keys", desc: "Solve 5 challenges themed around VARK styles to collect keys and escape the dungeon.", vark: "V, A, K, R", level: "Apply" }
+      ],
+      backpocket: [
+        { name: "Explain like a Caveman", desc: "Explain the active session concepts using only single-syllable words.", vark: "A", level: "Understand" },
+        { name: "Question Ball", desc: "Toss around a ball marked with section numbers. Answer corresponding questions.", vark: "K, A", level: "Apply" },
+        { name: "Mind the Gap", desc: "Pick terms off board. If correct, erase; if wrong, have peer explain to keep it moving.", vark: "V, A", level: "Remember" },
+        { name: "Ruin the Joke", desc: "Select memes about the course, and explain the science in so much detail that you ruin the joke.", vark: "V, R/W", level: "Analyze" },
+        { name: "Throw Your Problems At Me", desc: "Crumple up anonymous unit questions on paper, toss into bucket, and have group draw to solve.", vark: "K, R/W", level: "Analyze" },
+        { name: "Taboo / Password", desc: "Explain key terms without using related words on card. Peers guess terms.", vark: "A", level: "Analyze" },
+        { name: "Confidence Toss", desc: "Toss a coin. Correct heads/tails guess flips again. Incorrect guess draws card from cup.", vark: "K, A", level: "Understand" }
+      ],
+      closers: [
+        { name: "2 Dollar Summary", desc: "Summarize the lesson in exactly 20 words. Each word costs 10 cents; total must equal $2.00.", vark: "R/W", level: "Create" },
+        { name: "Start Stop Continue", desc: "Determine what behavior to initiate, end, or maintain going into study sessions.", vark: "R/W", level: "Evaluate" },
+        { name: "Study Buddy Bookmark", desc: "Stitched bookmarks with topics to focus on or cross out.", vark: "V, R/W", level: "Analyze" },
+        { name: "Explain to an Alien (Encounter)", desc: "Write/draw a simplified, foundational instruction card for an alien who knows nothing.", vark: "V, R/W", level: "Create" },
+        { name: "10 Words or Less", desc: "Define/describe a main topic in ten words or less. Excellent for consolidating logic.", vark: "R/W, A", level: "Analyze" },
+        { name: "One Minute Paper", desc: "Quickly jot down the most critical concept learned and the most confusing lingering question.", vark: "R/W", level: "Understand" },
+        { name: "Stop Light Weather Report", desc: "Mark comfort levels on topics: Sun (confident), Cloud (unsteady), Storm (lost).", vark: "V", level: "Evaluate" },
+        { name: "Table Topics Reflections", desc: "Draw high-level reflection questions from the jar to share overall takeaways.", vark: "A", level: "Analyze" }
+      ]
+    };
+
+    const BLOOM_VERBS = {
+      Remember: ["Define", "Duplicate", "List", "Memorize", "Repeat", "State", "Identify", "Label"],
+      Understand: ["Classify", "Describe", "Discuss", "Explain", "Indicate", "Review", "Locate", "Recognize", "Translate"],
+      Apply: ["Apply", "Demonstrate", "Discover", "Interpret", "Relate", "Write", "Execute", "Implement", "Solve", "Sketch"],
+      Analyze: ["Analyze", "Appraise", "Calculate", "Contrast", "Criticize", "Diagram", "Experiment", "Illustrate", "Infer", "Differentiate", "Organize", "Compare", "Distinguish", "Test"],
+      Evaluate: ["Argue", "Assess", "Conclude", "Estimate", "Evaluate", "Judge", "Support", "Defend", "Weigh", "Critique"],
+      Create: ["Arrange", "Assemble", "Compose", "Design", "Formulate", "Summarize", "Conjecture", "Develop", "Investigate", "Author"]
+    };
+
+    // Database for contextual ABCD Autogeneration
+    const CONTEXT_OBJ_DATABASE = {
+      "Biology (Anatomy & Physiology)": {
+        Audience: "Students will be able to",
+        Behavior: "diagram",
+        Condition: "given an unlabeled physiological cardiac diagram from memory",
+        Degree: "tracing the chronological path of blood flow through all four chambers and valves with 100% anatomical accuracy"
+      },
+      "Chemistry (General/Organic)": {
+        Audience: "Students will be able to",
+        Behavior: "calculate",
+        Condition: "using only a standard periodic table and stoichiometric ratios",
+        Degree: "solving limiting reactant equations with correct precision and matching measurement units on 4 out of 5 attempts"
+      },
+      "Mathematics (Algebra/Calculus)": {
+        Audience: "Students will be able to",
+        Behavior: "solve",
+        Condition: "given a list of composite functions, working independently without calculator assistance",
+        Degree: "applying the chain rule flawlessly across at least five distinct derivative equations"
+      },
+      "US History": {
+        Audience: "Students will be able to",
+        Behavior: "compare",
+        Condition: "given selected primary colonial source documents",
+        Degree: "identifying at least three socioeconomic contributing factors to the historical event with structured evidence"
+      },
+      "Accounting/Business": {
+        Audience: "Students will be able to",
+        Behavior: "balance",
+        Condition: "given a raw corporate ledger sheet listing miscellaneous assets and liabilities",
+        Degree: "matching total assets to total liabilities exactly to achieve a balanced double-entry equation"
+      },
+      "Custom/Other": {
+        Audience: "Students will be able to",
+        Behavior: "explain",
+        Condition: "under the designated in-session study parameters",
+        Degree: "meeting all course-aligned guidelines and peer validation metrics accurately"
+      }
+    };
+
+    // Initialize application state
+    window.onload = function() {
+      populateStrategySelects();
+      onBloomLevelChange();
+      onDisciplineChange();
+      compileObjective();
+    };
+
+    function populateStrategySelects() {
+      const openers = document.getElementById('select-opener');
+      const main1 = document.getElementById('select-main1');
+      const main2 = document.getElementById('select-main2');
+      const backpocket = document.getElementById('select-backpocket');
+      const closers = document.getElementById('select-closer');
+
+      populateSelect(openers, STRATEGY_DECK.openers);
+      populateSelect(main1, STRATEGY_DECK.mains);
+      populateSelect(main2, STRATEGY_DECK.mains, 1); // Select second main as default
+      populateSelect(backpocket, STRATEGY_DECK.backpocket);
+      populateSelect(closers, STRATEGY_DECK.closers);
+
+      onStrategySelect('opener');
+      onStrategySelect('main1');
+      onStrategySelect('main2');
+      onStrategySelect('backpocket');
+      onStrategySelect('closer');
+    }
+
+    function populateSelect(element, items, defaultIndex = 0) {
+      element.innerHTML = "";
+      items.forEach((item, index) => {
+        const opt = document.createElement('option');
+        opt.value = item.name;
+        opt.textContent = `${item.name} (VARK: ${item.vark})`;
+        if (index === defaultIndex) opt.selected = true;
+        element.appendChild(opt);
+      });
+    }
+
+    function onStrategySelect(type) {
+      let selectId = `select-${type}`;
+      let descId = `${type}-desc`;
+      let selectElem = document.getElementById(selectId);
+      let descElem = document.getElementById(descId);
+      let selectedVal = selectElem.value;
+
+      let deck = STRATEGY_DECK.openers;
+      if (type === 'main1' || type === 'main2') deck = STRATEGY_DECK.mains;
+      if (type === 'backpocket') deck = STRATEGY_DECK.backpocket;
+      if (type === 'closer') deck = STRATEGY_DECK.closers;
+
+      let match = deck.find(item => item.name === selectedVal);
+      if (match) {
+        descElem.innerHTML = `<strong>Bloom's Level:</strong> ${match.level} | <strong>Modality:</strong> ${match.vark} <br><span class="text-xs text-slate-500 dark:text-slate-400">${match.desc}</span>`;
+      }
+    }
+
+    function randomizeStrategies() {
+      randomSelect(document.getElementById('select-opener'), STRATEGY_DECK.openers);
+      randomSelect(document.getElementById('select-main1'), STRATEGY_DECK.mains);
+      randomSelect(document.getElementById('select-main2'), STRATEGY_DECK.mains);
+      randomSelect(document.getElementById('select-backpocket'), STRATEGY_DECK.backpocket);
+      randomSelect(document.getElementById('select-closer'), STRATEGY_DECK.closers);
+
+      onStrategySelect('opener');
+      onStrategySelect('main1');
+      onStrategySelect('main2');
+      onStrategySelect('backpocket');
+      onStrategySelect('closer');
+    }
+
+    function randomSelect(elem, list) {
+      let randIndex = Math.floor(Math.random() * list.length);
+      elem.selectedIndex = randIndex;
+    }
+
+    function onBloomLevelChange() {
+      const level = document.getElementById('bloom-level').value;
+      const select = document.getElementById('obj-behavior-select');
+      select.innerHTML = "";
+      BLOOM_VERBS[level].forEach(verb => {
+        const opt = document.createElement('option');
+        opt.value = verb.toLowerCase();
+        opt.textContent = verb;
+        select.appendChild(opt);
+      });
+      document.getElementById('obj-behavior-text').value = select.value;
+      compileObjective();
+    }
+
+    function onDisciplineChange() {
+      const discipline = document.getElementById('discipline').value;
+      const topics = document.getElementById('session-topics');
+
+      if (discipline.includes("Biology")) {
+        topics.value = "Blood Flow of the Heart";
+      } else if (discipline.includes("Chemistry")) {
+        topics.value = "Ionic and Covalent Bonds";
+      } else if (discipline.includes("Mathematics")) {
+        topics.value = "Calculus Chain Rule";
+      } else if (discipline.includes("History")) {
+        topics.value = "Causes of the Great Depression";
+      } else if (discipline.includes("Accounting")) {
+        topics.value = "Assets, Liabilities, and Ledgers";
+      } else {
+        topics.value = "Core Course Concepts";
+      }
+
+      autogenerateABCD();
+    }
+
+    // Dynamic Context-Aware ABCD Objective Generator based on Subject/Topics
+    function autogenerateABCD() {
+      const discipline = document.getElementById('discipline').value;
+      const topics = document.getElementById('session-topics').value || "specified concepts";
+      
+      const config = CONTEXT_OBJ_DATABASE[discipline] || CONTEXT_OBJ_DATABASE["Custom/Other"];
+      
+      document.getElementById('obj-audience').value = config.Audience;
+      document.getElementById('obj-behavior-text').value = config.Behavior;
+      
+      // Select appropriate Bloom Level matching behavior
+      for (const level in BLOOM_VERBS) {
+        if (BLOOM_VERBS[level].some(v => v.toLowerCase() === config.Behavior.toLowerCase())) {
+          document.getElementById('bloom-level').value = level;
+          onBloomLevelChange();
+          break;
+        }
+      }
+
+      // Contextual injection of active topics into condition and degree
+      let condText = config.Condition;
+      let degText = config.Degree;
+      
+      // Inject topic context
+      condText = condText.replace("unlabeled physiological cardiac diagram", `unlabeled physiological diagram of ${topics}`);
+      condText = condText.replace("list of composite functions", `composite equations of ${topics}`);
+      
+      document.getElementById('obj-condition').value = condText;
+      document.getElementById('obj-degree').value = degText;
+
+      compileObjective();
+      showToast("Objective Stitched", "Constructed custom ABCD learning objective aligned with your active session topics.", "fa-circle-check", "text-green-500");
+    }
+
+    function compileObjective() {
+      const aud = document.getElementById('obj-audience').value;
+      const beh = document.getElementById('obj-behavior-text').value;
+      const topic = document.getElementById('session-topics').value || "the lesson topic";
+      const cond = document.getElementById('obj-condition').value;
+      const deg = document.getElementById('obj-degree').value;
+
+      let stitched = `${aud} ${beh || "..."} ${topic}`;
+      if (cond) stitched += `, ${cond}`;
+      if (deg) stitched += `, ${deg}`;
+      stitched += ".";
+
+      document.getElementById('stitched-objective-text').innerText = stitched;
+      return stitched;
+    }
+
+    // Modal Toast Functions
+    function showToast(title, message, icon, colorClass) {
+      document.getElementById('toast-title').innerText = title;
+      document.getElementById('toast-message').innerText = message;
+      document.getElementById('toast-icon').className = `text-4xl mb-3 ${colorClass}`;
+      document.getElementById('toast-icon').innerHTML = `<i class="fa-solid ${icon}"></i>`;
+      document.getElementById('toast-modal').classList.remove('hidden');
+    }
+
+    function closeToast() {
+      document.getElementById('toast-modal').classList.add('hidden');
+    }
+
+    function toggleHighContrast() {
+      document.body.classList.toggle('contrast-125');
+      const btn = document.getElementById('contrastBtn');
+      if (document.body.classList.contains('contrast-125')) {
+        document.body.style.filter = "contrast(1.25)";
+        btn.classList.add('bg-amber-600', 'text-white');
+      } else {
+        document.body.style.filter = "none";
+        btn.classList.remove('bg-amber-600', 'text-white');
+      }
+    }
+
+    function changeFontSize(size) {
+      const container = document.getElementById('app-container');
+      container.classList.remove('text-sm', 'text-base', 'text-lg', 'text-xl');
+      if (size === 'small') container.classList.add('text-sm');
+      if (size === 'base') container.classList.add('text-base');
+      if (size === 'large') container.classList.add('text-lg');
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const themeIcon = document.getElementById('themeIcon');
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        themeIcon.className = "fa-solid fa-moon text-sky-600";
+      } else {
+        html.classList.add('dark');
+        themeIcon.className = "fa-solid fa-sun text-yellow-300";
+      }
+    }
+
+    // Export a deeply customized, strategy-specific facilitation prompt
+    function getSystemPrompt() {
+      const discipline = document.getElementById('discipline').value;
+      const topics = document.getElementById('session-topics').value || "Core Lecture Topics";
+      const delivery = document.getElementById('delivery-mode').value;
+      const scale = document.getElementById('turnout').value;
+      const objective = compileObjective();
+
+      const opener = document.getElementById('select-opener').value;
+      const main1 = document.getElementById('select-main1').value;
+      const main2 = document.getElementById('select-main2').value;
+      const backpocket = document.getElementById('select-backpocket').value;
+      const closer = document.getElementById('select-closer').value;
+
+      return `You are an expert Supplemental Instruction (SI) Director representing Tarrant County College. Write a highly detailed, minute-by-minute SI Session Lesson Plan matching TCC guidelines.
+
+### 📋 SESSION PARAMETERS
+- **Discipline/Course:** ${discipline}
+- **Session Topics/Concepts to cover:** ${topics}
+- **Delivery Mode:** ${delivery}
+- **Expected Turnout Scale:** ${scale}
+- **Stitched ABCD Learning Objective:** ${objective}
+
+### 🎴 SELECTED TCC STRATEGY CARDS
+1. **Opener (5-10 mins):** ${opener}
+2. **Main Activity 1 (15-20 mins):** ${main1}
+3. **Main Activity 2 (15-20 mins):** ${main2}
+4. **Alternative/Backpocket Activity:** ${backpocket}
+5. **Closer (5-10 mins):** ${closer}
+
+### ✍️ LESSON PLAN STRUCTURE & TCC GUIDELINES TO INCORPORATE:
+1. **Header Block Table:** Leader, Course, Topics, Delivery Mode, Expected Turnout, and the fully stitched ABCD Objective.
+2. **Detailed Timeline (60 Minutes Total):**
+   - **Opener (10 mins):** Step-by-step instructions on facilitating "${opener}". What are the students writing/saying? What does the SI leader say? Include VARK mapping.
+   - **Main Activity 1 (20 mins):** Step-by-step facilitation of "${main1}". Describe how the collaboration groups operate.
+   - **Main Activity 2 (20 mins):** Facilitation of "${main2}". Focus on higher-order peer-to-peer correction and how the boards or virtual spaces are managed.
+   - **Closer (10 mins):** How to run "${closer}" to check for understanding. Give the specific prompt and closing reminders.
+3. **Alternative / Backpocket Activity Plan:** Detail how the Leader adapts "${backpocket}" if turnout is extremely low (e.g. only 1 student) or high-speed.
+4. **Facilitation Strategy Guide (The SI Toolkit):**
+   - **Wait Time 1 & 2 Application:** Create specific prompts for where the leader pauses, providing silent countdown metrics.
+   - **Redirection Matrix:** List 3 potential questions students will ask and the exact redirection response (Student-to-Self, Student-to-Notes/Text, Student-to-Group).
+   - **Checking for Understanding:** List 3 specific open-ended questions designed to test cognitive layers.
+5. **ADA Accessibility Guidelines:** A concise breakdown validating accessibility across the chosen strategies.
+
+Structure the plan with professional markdown. Avoid introductory comments; write the session plan directly.`;
+    }
+
+    function copySystemPrompt() {
+      const prompt = getSystemPrompt();
+      const tempTextArea = document.createElement("textarea");
+      tempTextArea.value = prompt;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      try {
+        document.execCommand('copy');
+        showToast("Prompt Copied", "Your strategy-specific prompt is copied! Paste it into Gemini or ChatGPT to generate custom facilitation scenarios.", "fa-circle-check", "text-sky-500");
+      } catch (err) {
+        showToast("Error", "Failed to auto-copy. Please select and copy manually.", "fa-triangle-exclamation", "text-red-500");
+      }
+      document.body.removeChild(tempTextArea);
+    }
+
+    // Call Gemini API dynamically
+    async function generatePlanWithAI() {
+      const outputArea = document.getElementById('output-canvas');
+      const downloadBtn = document.getElementById('download-docx-btn');
+      
+      outputArea.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-20 text-sky-600 dark:text-sky-400">
+          <i class="fa-solid fa-spinner animate-spin text-5xl mb-4"></i>
+          <p class="font-bold text-sm">Generating comprehensive, multi-modal TCC SI lesson plan...</p>
+          <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Calling Gemini (gemini-2.5-flash-preview-09-2025)...</p>
+        </div>
+      `;
+
+      const promptText = getSystemPrompt();
+      const systemInstruction = "You are a professional Supplemental Instruction supervisor. Create a highly structured, polished, minute-by-minute SI lesson plan aligned exactly with the TCC SI Manual.";
+
+      const payload = {
+        contents: [
+          {
+            parts: [{ text: promptText }]
+          }
+        ],
+        systemInstruction: {
+          parts: [{ text: systemInstruction }]
+        }
+      };
+
+      let retries = 5;
+      let delay = 1000;
+      let success = false;
+      let resultText = "";
+
+      while (retries > 0 && !success) {
+        try {
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP Error ${response.status}`);
+          }
+
+          const data = await response.json();
+          resultText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+          if (resultText) {
+            success = true;
+          } else {
+            throw new Error("Empty candidate result.");
+          }
+        } catch (err) {
+          retries--;
+          if (retries === 0) {
+            resultText = generateMockFallback();
+          } else {
+            await new Promise(res => setTimeout(res, delay));
+            delay *= 2; 
+          }
+        }
+      }
+
+      currentRawPlanMarkdown = resultText;
+      outputArea.innerHTML = formatMarkdown(resultText);
+      downloadBtn.classList.remove('hidden'); // Reveal DOCX Downloader button
+      showToast("Session Plan Rendered", "AI generation completed successfully. Use the header options to download or print your customized plan.", "fa-circle-check", "text-green-500");
+    }
+
+    // Markdown Parser
+    function formatMarkdown(text) {
+      if (!text) return "";
+      let html = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/^### (.*$)/gim, '<h4 class="text-lg font-bold text-slate-700 dark:text-slate-300 mt-4 mb-2">$1</h4>')
+        .replace(/^## (.*$)/gim, '<h3 class="text-xl font-bold text-slate-800 dark:text-slate-200 mt-5 mb-3 border-b pb-1 border-slate-200 dark:border-slate-700">$1</h3>')
+        .replace(/^# (.*$)/gim, '<h2 class="text-2xl font-extrabold text-primary-800 dark:text-sky-300 mt-6 mb-4">$1</h2>')
+        .replace(/^\s*\*\s(.*$)/gim, '<li class="ml-4 list-disc text-sm text-slate-600 dark:text-slate-300">$1</li>')
+        .replace(/^\s*-\s(.*$)/gim, '<li class="ml-4 list-disc text-sm text-slate-600 dark:text-slate-300">$1</li>')
+        .replace(/^\s*\d+\.\s(.*$)/gim, '<li class="ml-4 list-decimal text-sm text-slate-600 dark:text-slate-300">$1</li>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-slate-900 dark:text-white">$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
+        .replace(/`(.*?)`/g, '<code class="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs text-sky-600 dark:text-sky-400 font-mono">$1</code>')
+        .replace(/\n$/gim, '<br />');
+
+      html = html.replace(/(<li class="ml-4 list-disc.*<\/li>)/g, '<ul class="space-y-1 my-2">$1</ul>');
+      html = html.replace(/(<li class="ml-4 list-decimal.*<\/li>)/g, '<ol class="space-y-1 my-2">$1</ol>');
+      return `<div class="space-y-4 theme-transition">${html}</div>`;
+    }
+
+    function generateMockFallback() {
+      const discipline = document.getElementById('discipline').value;
+      const topics = document.getElementById('session-topics').value || "Core Lecture Topics";
+      const delivery = document.getElementById('delivery-mode').value;
+      const objective = compileObjective();
+
+      const opener = document.getElementById('select-opener').value;
+      const main1 = document.getElementById('select-main1').value;
+      const main2 = document.getElementById('select-main2').value;
+      const backpocket = document.getElementById('select-backpocket').value;
+      const closer = document.getElementById('select-closer').value;
+
+      return `# 📘 TCC SI COMPREHENSIVE SESSION PLAN
+*Created for Tarrant County College Supplemental Instruction Division.*
+
+| Field Parameter | Value Details |
+| --- | --- |
+| **Discipline/Course** | ${discipline} |
+| **Session Topics** | ${topics} |
+| **Delivery Mode** | ${delivery} |
+| **ABCD Objective** | ${objective} |
+
+---
+
+## 🕒 MINUTE-BY-MINUTE AGENDA
+
+### 1. Welcome & Opener (10 Minutes): ${opener}
+* **Goal:** Welcome arrivals, capture attendance roster, and run strategy check.
+* **Facilitation Flow:** Run "${opener}". Direct students to contribute individually to the board or chat register.
+* **VARK Check:** Auditory (A), Reading/Writing (R).
+
+### 2. Main Activity 1 (20 Minutes): ${main1}
+* **Goal:** Core team collaboration over major concepts.
+* **Facilitation Flow:** Split group into smaller clusters. Direct students to work jointly using "${main1}". 
+* **Redirection Focus:** If a student asks a direct formula question, direct them to notes: "Let's check Tuesday's slides to verify."
+
+### 3. Main Activity 2 (20 Minutes): ${main2}
+* **Goal:** Higher-order cognitive processing and group correction.
+* **Facilitation Flow:** Challenge group dynamics using "${main2}". Assign different subtopics to teams, have them defend their layouts.
+* **Wait Time Strategy:** Utilize Wait Time 1 (15-20 seconds of pure silent scanning after delivering prompts).
+
+### 4. Session Closer (10 Minutes): ${closer}
+* **Goal:** Consolidate critical concepts and check understanding.
+* **Facilitation Flow:** Implement "${closer}". Have students summarize key takeaways. 
+* **Announcements:** Remind students when/where the next SI session is before dismissals.
+
+---
+
+## 🛠️ ALTERNATIVE / BACKPOCKET PLAN
+* **Turnout Strategy (${backpocket}):** If only 1 student attends, modify "${backpocket}" to play a direct 1-on-1 game challenging the SI leader, ensuring no re-lecturing occurs.
+
+---
+
+## 🗣️ REDIRECTION & CRITICAL QUESTIONS
+1. **Redirection Question 1 (Student asks for direct answers):**
+   - *Redirection Response:* "I appreciate that question! Class, who can help us locate the source diagram in chapter 3?"
+2. **Checking for Understanding Prompts:**
+   - "How would you explain the differences between these two states to a classmate who missed lecture?"
+   - "What are the common pitfalls we might make when executing this step under exam conditions?"`;
+    }
+
+    function downloadAsDocx() {
+      if (!currentRawPlanMarkdown) {
+        showToast("Error", "Please generate a session plan before downloading.", "fa-triangle-exclamation", "text-red-500");
+        return;
+      }
+      
+      const topics = document.getElementById('session-topics').value;
+      
+      // We wrap the generated plan into formatted Word HTML (which MS Word opens seamlessly as a .docx file)
+      const headerHtml = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+          <title>SI Session Plan</title>
+          <!--[if gte mso 9]>
+          <xml>
+            <w:WordDocument>
+              <w:View>Print</w:View>
+              <w:Zoom>100</w:Zoom>
+            </w:WordDocument>
+          </xml>
+          <![endif]-->
+          <style>
+            body { font-family: "Calibri", sans-serif; font-size: 11pt; line-height: 1.15; margin: 1in; }
+            h1 { font-family: "Arial", sans-serif; font-size: 18pt; color: #075985; border-bottom: 2px solid #0284c7; padding-bottom: 5px; margin-top: 20px; }
+            h2 { font-family: "Arial", sans-serif; font-size: 14pt; color: #0c4a6e; margin-top: 15px; }
+            h3 { font-family: "Arial", sans-serif; font-size: 12pt; color: #0f172a; margin-top: 10px; }
+            table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+            th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
+            th { background-color: #f1f5f9; font-weight: bold; }
+            ul, ol { margin-left: 20px; }
+            li { margin-bottom: 5px; }
+          </style>
+        </head>
+        <body>
+          <div style="text-align: center; margin-bottom: 30px;">
+            <p style="font-size: 14pt; font-weight: bold; color: #075985; margin: 0;">TARRANT COUNTY COLLEGE DISTRICT</p>
+            <p style="font-size: 12pt; font-weight: bold; color: #0c4a6e; margin: 5px 0 0 0;">SUPPLEMENTAL INSTRUCTION (SI) LESSON PLAN</p>
+          </div>
+          ${document.getElementById('output-canvas').innerHTML}
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob([headerHtml], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `TCC_SI_Plan_${topics.replace(/[^a-z0-9]/gi, '_')}.doc`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("Downloaded Plan", "Your Lesson Plan Word document has been generated and downloaded successfully.", "fa-circle-check", "text-green-500");
+    }
+
+    function copyGeneratedPlan() {
+      const outputCanvas = document.getElementById('output-canvas');
+      const tempTextArea = document.createElement("textarea");
+      tempTextArea.value = outputCanvas.innerText;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      try {
+        document.execCommand('copy');
+        showToast("Copied Plan", "Lesson Plan copy completed successfully.", "fa-circle-check", "text-sky-500");
+      } catch (err) {
+        showToast("Error", "Failed to auto-copy. Please copy manually.", "fa-triangle-exclamation", "text-red-500");
+      }
+      document.body.removeChild(tempTextArea);
+    }
+  </script>
+</body>
+</html>
