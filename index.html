@@ -54,6 +54,7 @@
                 </div>
             </div>
             
+            <!-- Desktop Navigation Menu (hidden on mobile) -->
             <nav class="hidden md:flex space-x-8 text-sm font-semibold text-slate-600">
                 <a href="#about" class="hover:text-sky-700 transition">About SI</a>
                 <a href="#resources" class="hover:text-sky-700 transition">Resources</a>
@@ -62,10 +63,32 @@
                 <a href="#contact" class="hover:text-sky-700 transition">Contact</a>
             </nav>
             
-            <a href="academic_coaching_study_habits.html" class="inline-flex items-center space-x-2 bg-tcc-blue text-white text-xs font-semibold px-4 py-2 rounded-full hover-bg-tcc-blue shadow-sm transition">
-                <span>Academic Coaching</span>
-                <i class="fa-solid fa-arrow-right"></i>
-            </a>
+            <div class="hidden md:block">
+                <a href="academic_coaching_study_habits.html" class="inline-flex items-center space-x-2 bg-tcc-blue text-white text-xs font-semibold px-4 py-2 rounded-full hover-bg-tcc-blue shadow-sm transition">
+                    <span>Academic Coaching</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <!-- Mobile Menu Toggle Button (visible only on mobile) -->
+            <button id="mobile-menu-btn" class="md:hidden text-slate-600 hover:text-tcc-blue focus:outline-none p-2 rounded-lg hover:bg-slate-100 transition" aria-label="Toggle Menu">
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Responsive Mobile Dropdown Drawer (hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-slate-100 bg-white px-4 py-4 space-y-3 shadow-inner">
+            <a href="#about" class="block font-semibold text-slate-600 hover:text-tcc-blue py-1.5 border-b border-slate-50">About SI</a>
+            <a href="#resources" class="block font-semibold text-slate-600 hover:text-tcc-blue py-1.5 border-b border-slate-50">Resources</a>
+            <a href="sessionplan.html" class="block font-semibold text-slate-600 hover:text-tcc-blue py-1.5 border-b border-slate-50">Session Plans</a>
+            <a href="#toolkit" class="block font-semibold text-slate-600 hover:text-tcc-blue py-1.5 border-b border-slate-50">Study Toolkit</a>
+            <a href="#contact" class="block font-semibold text-slate-600 hover:text-tcc-blue py-1.5">Contact</a>
+            <div class="pt-3 border-t border-slate-100">
+                <a href="academic_coaching_study_habits.html" class="inline-flex w-full justify-center items-center space-x-2 bg-tcc-blue text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover-bg-tcc-blue shadow-sm transition">
+                    <span>Academic Coaching Guide</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
         </div>
     </header>
 
@@ -477,6 +500,31 @@
                 toggleBtn.classList.add('bg-slate-900');
                 toggleBtn.classList.remove('bg-amber-600');
                 updateDisplay();
+            });
+
+            // 3. MOBILE MENU INTERACTION HANDLER
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const menuIcon = mobileMenuBtn.querySelector('i');
+
+            mobileMenuBtn.addEventListener('click', () => {
+                const isHidden = mobileMenu.classList.contains('hidden');
+                if (isHidden) {
+                    mobileMenu.classList.remove('hidden');
+                    menuIcon.classList.replace('fa-bars', 'fa-xmark');
+                } else {
+                    mobileMenu.classList.add('hidden');
+                    menuIcon.classList.replace('fa-xmark', 'fa-bars');
+                }
+            });
+
+            // Automatically close the menu when a link inside is clicked
+            const mobileLinks = mobileMenu.querySelectorAll('a');
+            mobileLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                    menuIcon.classList.replace('fa-xmark', 'fa-bars');
+                });
             });
 
         });
