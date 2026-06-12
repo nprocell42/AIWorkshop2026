@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SI Session Prompt Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --ink: #1a1a2e;
+    --ink-soft: #3d3d5c;
+    --ink-faint: #8888aa;
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface-alt: #f0efe9;
+    --accent: #4f46e5;
+    --accent-light: #ede9ff;
+    --accent-mid: #7c75f0;
+    --gold: #e8a020;
+    --gold-light: #fff4e0;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --red: #dc2626;
+    --border: #e2e1db;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 2px 12px rgba(26,26,46,0.07);
+    --shadow-md: 0 4px 24px rgba(26,26,46,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.55;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--ink);
+    color: #fff;
+    padding: 28px 40px 24px;
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .header-badge {
+    background: var(--accent);
+    color: #fff;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+  }
+  header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    line-height: 1.1;
+  }
+  header p {
+    color: #aaa8c8;
+    font-size: 14px;
+    margin-top: 4px;
+  }
+  .header-text { flex: 1; min-width: 220px; }
+  .step-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .step-pill {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #ccc;
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .step-pill.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .step-pill:hover:not(.active) {
+    background: rgba(255,255,255,0.14);
+    color: #fff;
+  }
+
+  /* ── Layout ── */
+  .app-body {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .app-body { grid-template-columns: 1fr; }
+    header { padding: 20px 20px 18px; }
+  }
+
+  /* ── Sections ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    display: none;
+  }
+  .section.visible { display: block; }
+
+  .section-header {
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .section-icon.blue { background: var(--accent-light); }
+  .section-icon.gold { background: var(--gold-light); }
+  .section-icon.green { background: var(--green-light); }
+  .section-icon.purple { background: #f3e8ff; }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+  }
+  .section-subtitle {
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-top: 1px;
+  }
+
+  .section-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+
+  /* ── Fields ── */
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) {
+    .field-row, .field-row-3 { grid-template-columns: 1fr; }
+  }
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    letter-spacing: .02em;
+    text-transform: uppercase;
+  }
+  label span.opt {
+    font-weight: 400;
+    color: var(--ink-faint);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 11px;
+    margin-left: 4px;
+  }
+
+  input[type="text"],
+  input[type="date"],
+  input[type="time"],
+  textarea,
+  select {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    width: 100%;
+    outline: none;
+    transition: border-color .18s, box-shadow .18s;
+    -webkit-appearance: none;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79,70,229,.1);
+  }
+  textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+
+  /* ── Toggle Pills ── */
+  .pill-group { display: flex; flex-wrap: wrap; gap: 7px; }
+  .pill {
+    font-size: 13px;
+    padding: 6px 13px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all .15s;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .pill:hover { border-color: var(--accent-mid); color: var(--accent); }
+  .pill.selected { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 500; }
+  .pill.selected-gold { background: var(--gold); border-color: var(--gold); color: #fff; font-weight: 500; }
+  .pill.selected-green { background: var(--green); border-color: var(--green); color: #fff; font-weight: 500; }
+
+  /* ── Activity Card ── */
+  .activity-card {
+    background: var(--surface-alt);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .activity-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  .activity-badge {
+    background: var(--accent);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    letter-spacing: .04em;
+  }
+  .activity-badge.opener { background: var(--gold); }
+  .activity-badge.closer { background: var(--green); }
+
+  /* ── Bloom's selector ── */
+  .blooms-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .bloom-chip {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    transition: all .15s;
+    font-weight: 500;
+  }
+  .bloom-chip:hover { opacity: .85; }
+  .bloom-chip.b1 { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+  .bloom-chip.b2 { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+  .bloom-chip.b3 { background: #dcfce7; color: #166534; border-color: #86efac; }
+  .bloom-chip.b4 { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+  .bloom-chip.b5 { background: #f3e8ff; color: #6b21a8; border-color: #d8b4fe; }
+  .bloom-chip.b6 { background: #ffe4e6; color: #9f1239; border-color: #fda4af; }
+  .bloom-chip.active { box-shadow: inset 0 0 0 1.5px currentColor; font-weight: 700; }
+
+  /* ── Nav buttons ── */
+  .nav-row {
+    display: flex;
+    gap: 10px;
+    padding: 0 20px 20px;
+  }
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    transition: all .17s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #4338ca; }
+  .btn-secondary { background: var(--surface-alt); color: var(--ink-soft); border: 1.5px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent-mid); color: var(--accent); }
+  .btn-full { width: 100%; justify-content: center; font-size: 15px; padding: 12px; }
+  .btn-copy { background: var(--green); color: #fff; }
+  .btn-copy:hover { background: #15803d; }
+  .btn-reset { background: transparent; color: var(--red); border: 1.5px solid #fca5a5; font-size: 13px; padding: 8px 14px; }
+  .btn-reset:hover { background: #fee2e2; }
+
+  /* ── Prompt Output Panel ── */
+  .output-panel {
+    position: sticky;
+    top: 24px;
+    background: var(--ink);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+  }
+  .output-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .output-header-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e0dff5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    background: #4ade80;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .4; }
+  }
+  .output-actions { display: flex; gap: 8px; }
+  .output-body {
+    padding: 16px 18px;
+    max-height: 560px;
+    overflow-y: auto;
+  }
+  .output-body::-webkit-scrollbar { width: 6px; }
+  .output-body::-webkit-scrollbar-track { background: transparent; }
+  .output-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 3px; }
+  #promptText {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    color: #c8c7e8;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .prompt-section-tag {
+    color: #7c75f0;
+    font-weight: 500;
+  }
+  .prompt-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6665a0;
+    font-size: 13px;
+    font-style: italic;
+  }
+  .output-footer {
+    padding: 12px 18px;
+    border-top: 1px solid rgba(255,255,255,.07);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* ── Copy toast ── */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--green);
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 18px rgba(22,163,74,.3);
+    opacity: 0;
+    transition: all .25s;
+    pointer-events: none;
+    z-index: 9999;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── Progress bar ── */
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    margin: 0;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width .3s ease;
+  }
+
+  /* ── Hint text ── */
+  .hint { font-size: 11.5px; color: var(--ink-faint); margin-top: 2px; }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 0;
+  }
+
+  /* ── Completion badge ── */
+  .completion-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 18px;
+    background: var(--accent-light);
+    border-top: 1px solid #ddd9ff;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-text">
+    <div class="header-badge">SI Leader Toolkit</div>
+    <h1>Session Prompt Generator</h1>
+    <p>Fill in each section — your AI prompt builds live on the right.</p>
+  </div>
+  <div class="step-pills">
+    <div class="step-pill active" onclick="showSection(0)">① Session Info</div>
+    <div class="step-pill" onclick="showSection(1)">② Content</div>
+    <div class="step-pill" onclick="showSection(2)">③ Structure</div>
+    <div class="step-pill" onclick="showSection(3)">④ Activities</div>
+    <div class="step-pill" onclick="showSection(4)">⑤ Context</div>
+  </div>
+</header>
+<div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:20%"></div></div>
+
+<div class="app-body">
+  <div class="form-col">
+
+    <!-- SECTION 0: Session Info -->
+    <div class="section visible" id="sec0">
+      <div class="section-header">
+        <div class="section-icon blue">🗓️</div>
+        <div>
+          <div class="section-title">Session Information</div>
+          <div class="section-subtitle">Basic logistics for this SI session</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="field-row">
+          <div class="field">
+            <label>SI Leader Name</label>
+            <input type="text" id="leaderName" placeholder="e.g. Jordan Smith" oninput="updatePrompt()">
+          </div>
+          <div class="field">
+            <label>Course Name &amp; Number</label>
+            <input type="text" id="courseName" placeholder="e.g. BIO 101 – General Biology" oninput="updatePrompt()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Session Title</label>
+          <input type="text" id="sessionTitle" placeholder="e.g. Cellular Respiration Review" oninput="updatePrompt()">
+        </div>
+        <div class="field-row-3">
+          <div class="field">
+            <label>Session Date</label>
+            <input type="date" id="sessionDate" oninput="updatePrompt()">
+          </div>
+          <div class="field">
+            <label>Session Time</label>
+            <input type="time" id="sessionTime" oninput="updatePrompt()">
+          </div>
+          <div class="field">
+            <label>Total Duration</label>
+            <select id="duration" onchange="updatePrompt()">
+              <option value="">Select…</option>
+              <option>30 minutes</option>
+              <option>45 minutes</option>
+              <option>50 minutes</option>
+              <option>60 minutes</option>
+              <option>75 minutes</option>
+              <option>90 minutes</option>
+              <option>120 minutes</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Delivery Format</label>
+            <div class="pill-group" id="deliveryGroup">
+              <div class="pill" onclick="toggleSingle('deliveryGroup',this,'selected')">In-Person</div>
+              <div class="pill" onclick="toggleSingle('deliveryGroup',this,'selected')">Online (Synchronous)</div>
+              <div class="pill" onclick="toggleSingle('deliveryGroup',this,'selected')">Hybrid</div>
+              <div class="pill" onclick="toggleSingle('deliveryGroup',this,'selected')">Asynchronous</div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Group Size</label>
+            <div class="pill-group" id="groupSizeGroup">
+              <div class="pill" onclick="toggleSingle('groupSizeGroup',this,'selected')">Individual (1)</div>
+              <div class="pill" onclick="toggleSingle('groupSizeGroup',this,'selected')">Small (2–5)</div>
+              <div class="pill" onclick="toggleSingle('groupSizeGroup',this,'selected')">Medium (6–15)</div>
+              <div class="pill" onclick="toggleSingle('groupSizeGroup',this,'selected')">Large (16+)</div>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Test Proximity</label>
+          <div class="pill-group" id="testProximGroup">
+            <div class="pill" onclick="toggleSingle('testProximGroup',this,'selected-gold')">1–2 days before exam</div>
+            <div class="pill" onclick="toggleSingle('testProximGroup',this,'selected-gold')">1 week before exam</div>
+            <div class="pill" onclick="toggleSingle('testProximGroup',this,'selected-gold')">Mid-unit (no exam soon)</div>
+            <div class="pill" onclick="toggleSingle('testProximGroup',this,'selected-gold')">Day after exam (debrief)</div>
+            <div class="pill" onclick="toggleSingle('testProximGroup',this,'selected-gold')">Start of unit</div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-row"><button class="btn btn-primary" onclick="showSection(1)">Next: Content →</button></div>
+    </div>
+
+    <!-- SECTION 1: Content -->
+    <div class="section" id="sec1">
+      <div class="section-header">
+        <div class="section-icon gold">📚</div>
+        <div>
+          <div class="section-title">Content &amp; Learning Objectives</div>
+          <div class="section-subtitle">What students need to learn and know</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="field">
+          <label>Learning Objectives <span class="opt">(one per line)</span></label>
+          <textarea id="learningObjectives" placeholder="Students will be able to:&#10;• Describe the steps of cellular respiration&#10;• Compare aerobic vs anaerobic pathways&#10;• Calculate ATP yield" oninput="updatePrompt()"></textarea>
+        </div>
+        <div class="field">
+          <label>Chapter / Unit Topics</label>
+          <textarea id="chapterTopics" placeholder="e.g. Chapter 9: Glycolysis, Krebs Cycle, Electron Transport Chain" oninput="updatePrompt()" style="min-height:56px"></textarea>
+        </div>
+        <div class="field">
+          <label>Topics Covered This Session</label>
+          <textarea id="topicsCovered" placeholder="Specific topics you'll hit today…" oninput="updatePrompt()" style="min-height:56px"></textarea>
+        </div>
+        <div class="field">
+          <label>Key Terms / Vocabulary <span class="opt">(comma-separated)</span></label>
+          <input type="text" id="keyTerms" placeholder="e.g. ATP, NADH, substrate-level phosphorylation, chemiosmosis" oninput="updatePrompt()">
+        </div>
+        <div class="field">
+          <label>Known Student Misconceptions <span class="opt">(optional)</span></label>
+          <textarea id="misconceptions" placeholder="e.g. Students often confuse glycolysis location with mitochondria…" oninput="updatePrompt()" style="min-height:56px"></textarea>
+        </div>
+      </div>
+      <div class="nav-row">
+        <button class="btn btn-secondary" onclick="showSection(0)">← Back</button>
+        <button class="btn btn-primary" onclick="showSection(2)">Next: Structure →</button>
+      </div>
+    </div>
+
+    <!-- SECTION 2: Structure -->
+    <div class="section" id="sec2">
+      <div class="section-header">
+        <div class="section-icon green">⏱️</div>
+        <div>
+          <div class="section-title">Session Structure &amp; Timing</div>
+          <div class="section-subtitle">Opener, two main activities, and closer</div>
+        </div>
+      </div>
+      <div class="section-body">
+
+        <!-- Opener -->
+        <div class="activity-card">
+          <div class="activity-label">
+            <div class="activity-badge opener">OPENER</div>
+            Session Hook / Warm-Up
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Opener Type</label>
+              <select id="openerType" onchange="updatePrompt()">
+                <option value="">Select…</option>
+                <option>Think-Pair-Share</option>
+                <option>Rapid-Fire Q&amp;A</option>
+                <option>Poll / Show of Hands</option>
+                <option>Brain Dump</option>
+                <option>Concept Map Starter</option>
+                <option>Real-World Hook / News Story</option>
+                <option>Misconception Challenge</option>
+                <option>Vocabulary Warm-Up</option>
+                <option>Exit Ticket from Last Session</option>
+                <option>Mini Quiz (ungraded)</option>
+                <option>Case Study Intro</option>
+                <option>Custom (describe below)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Opener Time</label>
+              <select id="openerTime" onchange="updatePrompt()">
+                <option value="">Select…</option>
+                <option>5 minutes</option>
+                <option>7 minutes</option>
+                <option>10 minutes</option>
+                <option>12 minutes</option>
+                <option>15 minutes</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Opener Bloom's Level</label>
+            <div class="blooms-row" id="openerBlooms">
+              <div class="bloom-chip b1" onclick="toggleBloom('openerBlooms',this)">Remember</div>
+              <div class="bloom-chip b2" onclick="toggleBloom('openerBlooms',this)">Understand</div>
+              <div class="bloom-chip b3" onclick="toggleBloom('openerBlooms',this)">Apply</div>
+              <div class="bloom-chip b4" onclick="toggleBloom('openerBlooms',this)">Analyze</div>
+              <div class="bloom-chip b5" onclick="toggleBloom('openerBlooms',this)">Evaluate</div>
+              <div class="bloom-chip b6" onclick="toggleBloom('openerBlooms',this)">Create</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity 1 -->
+        <div class="activity-card">
+          <div class="activity-label">
+            <div class="activity-badge">ACTIVITY 1</div>
+            Main Learning Activity
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Activity Type</label>
+              <select id="act1Type" onchange="updatePrompt()">
+                <option value="">Select…</option>
+                <option>Jigsaw</option>
+                <option>Whiteboard Problem-Solving</option>
+                <option>Case Study Analysis</option>
+                <option>Gallery Walk</option>
+                <option>Fishbowl Discussion</option>
+                <option>Socratic Seminar</option>
+                <option>Team-Based Learning (TBL)</option>
+                <option>Concept Mapping</option>
+                <option>Reciprocal Teaching</option>
+                <option>Worked Examples</option>
+                <option>Practice Problems (tiered)</option>
+                <option>Error Analysis</option>
+                <option>Analogies Workshop</option>
+                <option>Matching / Card Sort</option>
+                <option>Simulation / Role Play</option>
+                <option>Custom (describe below)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Activity 1 Name <span class="opt">(your title)</span></label>
+              <input type="text" id="act1Name" placeholder="e.g. ATP Factory Jigsaw" oninput="updatePrompt()">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Group Format</label>
+              <select id="act1Group" onchange="updatePrompt()">
+                <option value="">Select…</option>
+                <option>Individual</option>
+                <option>Pairs</option>
+                <option>Small groups (3–4)</option>
+                <option>Small groups (5–6)</option>
+                <option>Whole group discussion</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Time Allotted</label>
+              <select id="act1Time" onchange="updatePrompt()">
+                <option value="">Select…</option>
+                <option>10 minutes</option>
+                <option>12 minutes</option>
+                <option>15 minutes</option>
+                <option>18 minutes</option>
+                <option>20 minutes</option>
+                <option>25 minutes</option>
+                <option>30 minutes</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Bloom's Level</label>
+            <div class="blooms-row" id="act1Blooms">
+              <div class="bloom-chip b1" onclick="toggleBloom('act1Blooms',this)">Remember</div>
+              <div class="bloom-chip b2" onclick="toggleBloom('act1Blooms',this)">Understand</div>
+              <div class="bloom-chip b3" onclick="toggleBloom('act1Blooms',this)">Apply</div>
+              <div class="bloom-chip b4" onclick="toggleBloom('act1Blooms',this)">Analyze</div>
+              <div class="bloom-chip b5" onclick="toggleBloom('act1Blooms',this)">Evaluate</div>
+              <div class="bloom-chip b6" onclick="toggleBloom('act1Blooms',this)">Create</div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Activity 1 Special Notes <span class="opt">(optional)</span></label>
+            <input type="text" id="act1Notes" placeholder="e.g. Use dry-erase boards, assign roles per group" oninput="updatePrompt()">
+          </div>
+        </div>
+
+        <!-- Activity 2 -->
+        <div class="activity-card">
+          <div class="activity-label">
+            <div class="activity-badge">ACTIVITY 2</div>
+            Application / Deeper Dive
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Activity Type</label>
+              <select id="act2Type" onchange="updatePrompt()">
+                <option value="">Select…</option>
+                <option>Jigsaw</option>
+                <option>Whiteboard Problem-Solving</option>
+                <option>Case Study Analysis</option>
+                <option>Gallery Walk</option>
+                <option>Fishbowl Discussion</option>
+                <option>Socratic Seminar</option>
+                <option>Team-Based Learning (TBL)</option>
+                <option>Concept Mapping</option>
+                <option>Reciprocal Teaching</option>
+                <option>Worked Examples</option>
+                <option>Practice Problems (tiered)</option>
+                <option>Error Analysis</option>
+                <option>Analogies Workshop</option>
+                <option>Matching / Card Sort</option>
+                <option>Simulation / Role Play</option>
+                <option>Custom (describe below)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Activity 2 Name <span class="opt">(your title)</span></label>
+              <input type="text" id="act2Name" placeholder="e.g. Krebs Cycle Error Hunt" oninput="updatePrompt()">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Group Format</label>
+              <select id="act2Group" onchange="updatePrompt()">
+                <option value="">Select…</option>
+                <option>Individual</option>
+                <option>Pairs</option>
+                <option>Small groups (3–4)</option>
+                <option>Small groups (5–6)</option>
+                <option>Whole group discussion</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Time Allotted</label>
+              <select id="act2Time" onchange="updatePrompt()">
+                <option value="">Select…</option>
+                <option>10 minutes</option>
+                <option>12 minutes</option>
+                <option>15 minutes</option>
+                <option>18 minutes</option>
+                <option>20 minutes</option>
+                <option>25 minutes</option>
+                <option>30 minutes</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Bloom's Level</label>
+            <div class="blooms-row" id="act2Blooms">
+              <div class="bloom-chip b1" onclick="toggleBloom('act2Blooms',this)">Remember</div>
+              <div class="bloom-chip b2" onclick="toggleBloom('act2Blooms',this)">Understand</div>
+              <div class="bloom-chip b3" onclick="toggleBloom('act2Blooms',this)">Apply</div>
+              <div class="bloom-chip b4" onclick="toggleBloom('act2Blooms',this)">Analyze</div>
+              <div class="bloom-chip b5" onclick="toggleBloom('act2Blooms',this)">Evaluate</div>
+              <div class="bloom-chip b6" onclick="toggleBloom('act2Blooms',this)">Create</div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Activity 2 Special Notes <span class="opt">(optional)</span></label>
+            <input type="text" id="act2Notes" placeholder="e.g. Provide incorrect worked example for students to find flaws" oninput="updatePrompt()">
+          </div>
+        </div>
+
+        <!-- Closer -->
+        <div class="activity-card">
+          <div class="activity-label">
+            <div class="activity-badge closer">CLOSER</div>
+            Wrap-Up / Exit
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Closer Type</label>
+              <select id="closerType" onchange="updatePrompt()">
+                <option value="">Select…</option>
+                <option>Exit Ticket (3-2-1)</option>
+                <option>Exit Ticket (Muddiest Point)</option>
+                <option>One-Sentence Summary</option>
+                <option>Pair Share Takeaway</option>
+                <option>Whiteboard Summary</option>
+                <option>Quick Quiz (2–3 questions)</option>
+                <option>Concept Map Completion</option>
+                <option>STOP / START / CONTINUE Reflection</option>
+                <option>Preview of Next Session</option>
+                <option>Plus/Delta Feedback</option>
+                <option>Custom (describe below)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Closer Time</label>
+              <select id="closerTime" onchange="updatePrompt()">
+                <option value="">Select…</option>
+                <option>5 minutes</option>
+                <option>7 minutes</option>
+                <option>10 minutes</option>
+                <option>12 minutes</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Closer Bloom's Level</label>
+            <div class="blooms-row" id="closerBlooms">
+              <div class="bloom-chip b1" onclick="toggleBloom('closerBlooms',this)">Remember</div>
+              <div class="bloom-chip b2" onclick="toggleBloom('closerBlooms',this)">Understand</div>
+              <div class="bloom-chip b3" onclick="toggleBloom('closerBlooms',this)">Apply</div>
+              <div class="bloom-chip b4" onclick="toggleBloom('closerBlooms',this)">Analyze</div>
+              <div class="bloom-chip b5" onclick="toggleBloom('closerBlooms',this)">Evaluate</div>
+              <div class="bloom-chip b6" onclick="toggleBloom('closerBlooms',this)">Create</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-row">
+        <button class="btn btn-secondary" onclick="showSection(1)">← Back</button>
+        <button class="btn btn-primary" onclick="showSection(3)">Next: Activities →</button>
+      </div>
+    </div>
+
+    <!-- SECTION 3: Activity Details -->
+    <div class="section" id="sec3">
+      <div class="section-header">
+        <div class="section-icon purple">🎯</div>
+        <div>
+          <div class="section-title">Activity Enrichment</div>
+          <div class="section-subtitle">Analogies, real-world hooks, and differentiation</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="field">
+          <label>Analogies to Use <span class="opt">(describe or list)</span></label>
+          <textarea id="analogies" placeholder="e.g. Compare the electron transport chain to a factory assembly line; mitochondria as a 'power plant'…" oninput="updatePrompt()"></textarea>
+        </div>
+        <div class="field">
+          <label>Real-World Examples or Applications</label>
+          <textarea id="realWorld" placeholder="e.g. How does lactic acid buildup relate to muscle fatigue in athletes? Link to sports medicine…" oninput="updatePrompt()"></textarea>
+        </div>
+        <div class="field">
+          <label>Differentiation Needs</label>
+          <div class="pill-group" id="diffGroup">
+            <div class="pill" onclick="toggleMulti(this,'selected')">Tiered tasks (easy → hard)</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Visual/diagram supports</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Sentence starters</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Glossary references</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Worked example first</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Multilingual students</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Extended time options</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Technology / Materials Needed</label>
+          <div class="pill-group" id="materialsGroup">
+            <div class="pill" onclick="toggleMulti(this,'selected')">Whiteboard / markers</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Printed handouts</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Index cards</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Polling tool (Mentimeter)</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Jamboard / Miro</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Zoom Breakout Rooms</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Kahoot / Quizlet</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Manipulatives / Models</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Laptop / Device</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Student Energy / Engagement Level Expected</label>
+          <div class="pill-group" id="energyGroup">
+            <div class="pill" onclick="toggleSingle('energyGroup',this,'selected')">Low energy (post-exam, tired)</div>
+            <div class="pill" onclick="toggleSingle('energyGroup',this,'selected')">Moderate, mixed</div>
+            <div class="pill" onclick="toggleSingle('energyGroup',this,'selected')">High energy, motivated</div>
+            <div class="pill" onclick="toggleSingle('energyGroup',this,'selected')">Anxious (pre-exam)</div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-row">
+        <button class="btn btn-secondary" onclick="showSection(2)">← Back</button>
+        <button class="btn btn-primary" onclick="showSection(4)">Next: Context →</button>
+      </div>
+    </div>
+
+    <!-- SECTION 4: Context & Output -->
+    <div class="section" id="sec4">
+      <div class="section-header">
+        <div class="section-icon blue">⚙️</div>
+        <div>
+          <div class="section-title">AI Output Preferences</div>
+          <div class="section-subtitle">Control what the AI creates for you</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="field">
+          <label>Output Format</label>
+          <div class="pill-group" id="outputFormat">
+            <div class="pill" onclick="toggleMulti(this,'selected')">Full session plan document</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Slide-by-slide outline</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Student-facing handout</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Facilitator script</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Discussion questions only</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Practice problems set</div>
+            <div class="pill" onclick="toggleMulti(this,'selected')">Visual concept map</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Discipline Area</label>
+          <div class="pill-group" id="disciplineGroup">
+            <div class="pill" onclick="toggleSingle('disciplineGroup',this,'selected')">STEM / Science</div>
+            <div class="pill" onclick="toggleSingle('disciplineGroup',this,'selected')">Math / Statistics</div>
+            <div class="pill" onclick="toggleSingle('disciplineGroup',this,'selected')">Social Sciences</div>
+            <div class="pill" onclick="toggleSingle('disciplineGroup',this,'selected')">Humanities / Writing</div>
+            <div class="pill" onclick="toggleSingle('disciplineGroup',this,'selected')">Business / Economics</div>
+            <div class="pill" onclick="toggleSingle('disciplineGroup',this,'selected')">Health / Nursing</div>
+            <div class="pill" onclick="toggleSingle('disciplineGroup',this,'selected')">Psychology</div>
+            <div class="pill" onclick="toggleSingle('disciplineGroup',this,'selected')">History</div>
+            <div class="pill" onclick="toggleSingle('disciplineGroup',this,'selected')">Computer Science</div>
+            <div class="pill" onclick="toggleSingle('disciplineGroup',this,'selected')">Foreign Language</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>AI Tone / Style</label>
+          <div class="pill-group" id="toneGroup">
+            <div class="pill" onclick="toggleSingle('toneGroup',this,'selected')">Detailed &amp; formal</div>
+            <div class="pill" onclick="toggleSingle('toneGroup',this,'selected')">Practical &amp; concise</div>
+            <div class="pill" onclick="toggleSingle('toneGroup',this,'selected')">Flexible / big-picture</div>
+            <div class="pill" onclick="toggleSingle('toneGroup',this,'selected')">Step-by-step script</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Additional Instructions for AI <span class="opt">(optional)</span></label>
+          <textarea id="additionalInstructions" placeholder="e.g. Include transition phrases between activities, add a fallback activity in case students finish early, suggest questions that check for understanding throughout…" oninput="updatePrompt()" style="min-height:80px"></textarea>
+        </div>
+        <div class="field">
+          <label>Special Circumstances <span class="opt">(optional)</span></label>
+          <textarea id="specialCirc" placeholder="e.g. First SI session of semester, makeup session after a cancelled class, students are struggling with prerequisite material…" oninput="updatePrompt()" style="min-height:60px"></textarea>
+        </div>
+      </div>
+      <div class="nav-row">
+        <button class="btn btn-secondary" onclick="showSection(3)">← Back</button>
+        <button class="btn btn-copy btn-full" onclick="copyPrompt()">📋 Copy Full Prompt to Clipboard</button>
+      </div>
+    </div>
+
+  </div><!-- end form-col -->
+
+  <!-- OUTPUT PANEL -->
+  <div class="output-panel">
+    <div class="output-header">
+      <div class="output-header-text">
+        <div class="live-dot"></div>
+        Live Prompt Preview
+      </div>
+      <div class="output-actions">
+        <button class="btn btn-reset" onclick="resetAll()">↺ Reset</button>
+      </div>
+    </div>
+    <div class="output-body">
+      <div id="promptText"><div class="prompt-empty">Start filling in the form and your AI prompt will appear here in real time.</div></div>
+    </div>
+    <div class="output-footer">
+      <button class="btn btn-copy btn-full" onclick="copyPrompt()">📋 Copy Prompt</button>
+    </div>
+    <div class="completion-row">
+      <span id="completionLabel">0 / 10 key fields filled</span>
+      <span id="completionPct" style="font-family:'DM Mono',monospace">0%</span>
+    </div>
+  </div>
+
+</div><!-- end app-body -->
+
+<div class="toast" id="toast">✓ Prompt copied to clipboard!</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────
+let currentSection = 0;
+const totalSections = 5;
+
+// ── Navigation ─────────────────────────────────────────────
+function showSection(idx) {
+  document.querySelectorAll('.section').forEach((s, i) => {
+    s.classList.toggle('visible', i === idx);
+  });
+  document.querySelectorAll('.step-pill').forEach((p, i) => {
+    p.classList.toggle('active', i === idx);
+  });
+  currentSection = idx;
+  document.getElementById('progressFill').style.width = ((idx + 1) / totalSections * 100) + '%';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Toggle helpers ─────────────────────────────────────────
+function toggleSingle(groupId, el, cls) {
+  const group = document.getElementById(groupId);
+  group.querySelectorAll('.pill').forEach(p => p.classList.remove(cls));
+  el.classList.toggle(cls);
+  updatePrompt();
+}
+
+function toggleMulti(el, cls) {
+  el.classList.toggle(cls);
+  updatePrompt();
+}
+
+function toggleBloom(groupId, el) {
+  const group = document.getElementById(groupId);
+  group.querySelectorAll('.bloom-chip').forEach(c => c.classList.remove('active'));
+  el.classList.toggle('active');
+  updatePrompt();
+}
+
+// ── Read helpers ───────────────────────────────────────────
+function v(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+function getSelected(groupId, cls = 'selected') {
+  const group = document.getElementById(groupId);
+  if (!group) return '';
+  const sel = [...group.querySelectorAll('.' + cls + ', .selected-gold, .selected-green')]
+    .filter(p => p.closest('#' + groupId))
+    .map(p => p.textContent.trim());
+  // For specific groups, filter by actual selected class
+  return '';
+}
+
+function getSelectedByClass(groupId) {
+  const group = document.getElementById(groupId);
+  if (!group) return [];
+  return [...group.querySelectorAll('.selected, .selected-gold, .selected-green')]
+    .map(p => p.textContent.trim());
+}
+
+function getSelectedMulti(groupId) {
+  const group = document.getElementById(groupId);
+  if (!group) return [];
+  return [...group.querySelectorAll('.selected')].map(p => p.textContent.trim());
+}
+
+function getBloom(groupId) {
+  const group = document.getElementById(groupId);
+  if (!group) return '';
+  const active = group.querySelector('.active');
+  return active ? active.textContent.trim() : '';
+}
+
+// ── Prompt Builder ─────────────────────────────────────────
+function updatePrompt() {
+  const leader = v('leaderName');
+  const course = v('courseName');
+  const title = v('sessionTitle');
+  const date = v('sessionDate');
+  const time = v('sessionTime');
+  const duration = v('duration');
+  const delivery = getSelectedByClass('deliveryGroup').join(', ') || '[format not set]';
+  const groupSize = getSelectedByClass('groupSizeGroup').join(', ') || '[size not set]';
+  const testProx = getSelectedByClass('testProximGroup').join(', ') || '[timing not specified]';
+
+  const objectives = v('learningObjectives');
+  const chapters = v('chapterTopics');
+  const topics = v('topicsCovered');
+  const keyTerms = v('keyTerms');
+  const misconceptions = v('misconceptions');
+
+  const openerType = v('openerType');
+  const openerTime = v('openerTime');
+  const openerBlooms = getBloom('openerBlooms');
+
+  const act1Type = v('act1Type');
+  const act1Name = v('act1Name');
+  const act1Group = v('act1Group');
+  const act1Time = v('act1Time');
+  const act1Blooms = getBloom('act1Blooms');
+  const act1Notes = v('act1Notes');
+
+  const act2Type = v('act2Type');
+  const act2Name = v('act2Name');
+  const act2Group = v('act2Group');
+  const act2Time = v('act2Time');
+  const act2Blooms = getBloom('act2Blooms');
+  const act2Notes = v('act2Notes');
+
+  const closerType = v('closerType');
+  const closerTime = v('closerTime');
+  const closerBlooms = getBloom('closerBlooms');
+
+  const analogies = v('analogies');
+  const realWorld = v('realWorld');
+  const diffNeeds = getSelectedMulti('diffGroup');
+  const materials = getSelectedMulti('materialsGroup');
+  const energy = getSelectedByClass('energyGroup').join(', ');
+
+  const outputFmt = getSelectedMulti('outputFormat');
+  const discipline = getSelectedByClass('disciplineGroup').join(', ');
+  const tone = getSelectedByClass('toneGroup').join(', ');
+  const addInstr = v('additionalInstructions');
+  const special = v('specialCirc');
+
+  // Check if anything filled
+  const hasContent = leader || course || title || objectives || topics;
+  if (!hasContent) {
+    document.getElementById('promptText').innerHTML = '<div class="prompt-empty">Start filling in the form and your AI prompt will appear here in real time.</div>';
+    updateCompletion();
+    return;
+  }
+
+  const line = (label, val) => val ? `  • ${label}: ${val}\n` : '';
+  const multiLine = (label, val) => val ? `  • ${label}:\n${val.split('\n').map(l => '    ' + l).join('\n')}\n` : '';
+  const listLine = (label, arr) => arr.length ? `  • ${label}: ${arr.join(', ')}\n` : '';
+
+  let prompt = '';
+  prompt += `You are helping an SI (Supplemental Instruction) leader plan a complete, structured study session for college students.\n\n`;
+  prompt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+  prompt += `SESSION OVERVIEW\n`;
+  prompt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+  prompt += line('SI Leader', leader || '[not specified]');
+  prompt += line('Course', course || '[not specified]');
+  prompt += line('Session Title', title || '[not specified]');
+  if (date) prompt += line('Date', date);
+  if (time) prompt += line('Time', time);
+  prompt += line('Total Duration', duration || '[not specified]');
+  prompt += line('Delivery Format', delivery);
+  prompt += line('Group Size', groupSize);
+  prompt += line('Discipline Area', discipline || '[not specified]');
+  prompt += line('Test Proximity', testProx);
+  if (energy) prompt += line('Student Energy Expected', energy);
+  prompt += `\n`;
+
+  prompt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+  prompt += `CONTENT & LEARNING OBJECTIVES\n`;
+  prompt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+  if (objectives) prompt += multiLine('Learning Objectives', objectives);
+  if (chapters) prompt += line('Chapter / Unit Topics', chapters);
+  if (topics) prompt += line('Topics Covered This Session', topics);
+  if (keyTerms) prompt += line('Key Terms / Vocabulary', keyTerms);
+  if (misconceptions) prompt += multiLine('Known Student Misconceptions', misconceptions);
+  prompt += `\n`;
+
+  prompt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+  prompt += `SESSION STRUCTURE\n`;
+  prompt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+
+  prompt += `\n[OPENER]\n`;
+  prompt += line('Type', openerType || '[not selected]');
+  prompt += line('Time', openerTime || '[not set]');
+  prompt += line("Bloom's Level", openerBlooms || '[not selected]');
+
+  prompt += `\n[ACTIVITY 1]\n`;
+  if (act1Name) prompt += line('Name', act1Name);
+  prompt += line('Type', act1Type || '[not selected]');
+  prompt += line('Group Format', act1Group || '[not set]');
+  prompt += line('Time', act1Time || '[not set]');
+  prompt += line("Bloom's Level", act1Blooms || '[not selected]');
+  if (act1Notes) prompt += line('Special Notes', act1Notes);
+
+  prompt += `\n[ACTIVITY 2]\n`;
+  if (act2Name) prompt += line('Name', act2Name);
+  prompt += line('Type', act2Type || '[not selected]');
+  prompt += line('Group Format', act2Group || '[not set]');
+  prompt += line('Time', act2Time || '[not set]');
+  prompt += line("Bloom's Level", act2Blooms || '[not selected]');
+  if (act2Notes) prompt += line('Special Notes', act2Notes);
+
+  prompt += `\n[CLOSER]\n`;
+  prompt += line('Type', closerType || '[not selected]');
+  prompt += line('Time', closerTime || '[not set]');
+  prompt += line("Bloom's Level", closerBlooms || '[not selected]');
+  prompt += `\n`;
+
+  if (analogies || realWorld || diffNeeds.length || materials.length) {
+    prompt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    prompt += `ENRICHMENT & DIFFERENTIATION\n`;
+    prompt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    if (analogies) prompt += multiLine('Analogies to Incorporate', analogies);
+    if (realWorld) prompt += multiLine('Real-World Examples / Applications', realWorld);
+    if (diffNeeds.length) prompt += listLine('Differentiation Strategies', diffNeeds);
+    if (materials.length) prompt += listLine('Materials / Technology Needed', materials);
+    prompt += `\n`;
+  }
+
+  prompt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+  prompt += `AI OUTPUT INSTRUCTIONS\n`;
+  prompt += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+  if (outputFmt.length) prompt += listLine('Requested Output Format(s)', outputFmt);
+  if (tone) prompt += line('Tone / Style', tone);
+
+  prompt += `\nPlease generate a complete, ready-to-use SI session plan with the following structure:\n`;
+  prompt += `  1. OPENER (${openerTime || 'timed'}) — ${openerType || 'warm-up activity'} at ${openerBlooms || 'appropriate'} Bloom's level\n`;
+  prompt += `  2. ACTIVITY 1 (${act1Time || 'timed'}) — ${act1Name || act1Type || 'main activity'}, ${act1Group || 'in groups'}, at ${act1Blooms || 'appropriate'} Bloom's level\n`;
+  prompt += `  3. ACTIVITY 2 (${act2Time || 'timed'}) — ${act2Name || act2Type || 'deeper activity'}, ${act2Group || 'in groups'}, at ${act2Blooms || 'appropriate'} Bloom's level\n`;
+  prompt += `  4. CLOSER (${closerTime || 'timed'}) — ${closerType || 'wrap-up'} at ${closerBlooms || 'appropriate'} Bloom's level\n`;
+  prompt += `\nFor each part, include:\n`;
+  prompt += `  • Clear facilitator instructions\n`;
+  prompt += `  • Specific questions or tasks for students\n`;
+  prompt += `  • Suggested student-facing materials or prompts\n`;
+  prompt += `  • Transition language between sections\n`;
+  prompt += `  • Embedded checks for understanding\n`;
+  if (analogies) prompt += `  • Use the provided analogies where appropriate\n`;
+  if (realWorld) prompt += `  • Weave in the real-world examples given\n`;
+  if (misconceptions) prompt += `  • Proactively address the listed student misconceptions\n`;
+  if (keyTerms) prompt += `  • Ensure all key vocabulary is used and reinforced\n`;
+
+  if (addInstr) {
+    prompt += `\nAdditional AI Instructions:\n  ${addInstr}\n`;
+  }
+  if (special) {
+    prompt += `\nSpecial Circumstances:\n  ${special}\n`;
+  }
+
+  prompt += `\nNote: This session is designed for ${course || 'this course'} and should match ${discipline || 'the discipline'} conventions. Assume students have completed assigned readings but may need help connecting concepts.`;
+
+  // Render with colored section tags
+  const escaped = prompt
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/(━+[\w &\/\[\]\']+━*\n|━+\n)/g, '<span class="prompt-section-tag">$1</span>')
+    .replace(/\[(OPENER|ACTIVITY \d|CLOSER)\]/g, '<span class="prompt-section-tag">[$1]</span>');
+
+  document.getElementById('promptText').innerHTML = escaped;
+  updateCompletion();
+}
+
+function updateCompletion() {
+  const fields = [
+    v('leaderName'), v('courseName'), v('sessionTitle'),
+    v('duration'), v('learningObjectives'), v('topicsCovered'),
+    v('openerType'), v('act1Type'), v('act2Type'), v('closerType')
+  ];
+  const filled = fields.filter(f => f.length > 0).length;
+  const pct = Math.round(filled / fields.length * 100);
+  document.getElementById('completionLabel').textContent = `${filled} / ${fields.length} key fields filled`;
+  document.getElementById('completionPct').textContent = pct + '%';
+}
+
+function copyPrompt() {
+  const text = document.getElementById('promptText').innerText;
+  if (!text || text.includes('Start filling')) {
+    showToast('⚠️ Fill in some fields first!');
+    return;
+  }
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('✓ Prompt copied to clipboard!');
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✓ Copied!');
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function resetAll() {
+  if (!confirm('Reset all fields?')) return;
+  document.querySelectorAll('input[type="text"], input[type="date"], input[type="time"], textarea').forEach(el => el.value = '');
+  document.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('selected', 'selected-gold', 'selected-green'));
+  document.querySelectorAll('.bloom-chip').forEach(c => c.classList.remove('active'));
+  document.getElementById('promptText').innerHTML = '<div class="prompt-empty">Start filling in the form and your AI prompt will appear here in real time.</div>';
+  updateCompletion();
+  showSection(0);
+}
+
+// Init
+updateCompletion();
+</script>
+</body>
+</html>
