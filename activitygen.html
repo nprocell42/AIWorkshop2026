@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SI Session Prompt Generator</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: auto; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        textarea, input, select { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
+        button { margin-top: 20px; padding: 10px 20px; background-color: #0056b3; color: white; border: none; cursor: pointer; }
+        #output { margin-top: 20px; padding: 15px; border: 1px solid #ccc; background: #f9f9f9; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>SI Session Prompt Generator</h1>
+    <label>Course Topic/Material:</label>
+    <textarea id="topic" placeholder="e.g., Cellular Respiration, Chapter 4"></textarea>
+    
+    <label>Bloom's Taxonomy Level:</label>
+    <select id="bloom">
+        <option value="Remembering">Remembering</option>
+        <option value="Understanding">Understanding</option>
+        <option value="Applying">Applying</option>
+        <option value="Analyzing">Analyzing</option>
+        <option value="Evaluating">Evaluating</option>
+        <option value="Creating">Creating</option>
+    </select>
+
+    <label>VARK Focus (Check all that apply):</label>
+    <div>
+        <input type="checkbox" id="v_visual" value="Visual"> Visual
+        <input type="checkbox" id="v_auditory" value="Auditory"> Auditory
+        <input type="checkbox" id="v_read" value="Reading/Writing"> Reading/Writing
+        <input type="checkbox" id="v_kinesthetic" value="Kinesthetic"> Kinesthetic
+    </div>
+
+    <label>Session Format:</label>
+    <select id="format">
+        <option value="In-person">In-person</option>
+        <option value="Virtual">Virtual</option>
+    </select>
+
+    <label>Estimated Attendance:</label>
+    <input type="number" id="attendance" value="10">
+
+    <button onclick="generatePrompt()">Generate Prompt</button>
+
+    <h2>Generated Prompt:</h2>
+    <div id="output"></div>
+
+    <script>
+        function generatePrompt() {
+            const topic = document.getElementById('topic').value;
+            const bloom = document.getElementById('bloom').value;
+            const format = document.getElementById('format').value;
+            const attendance = document.getElementById('attendance').value;
+            
+            let vark = [];
+            if(document.getElementById('v_visual').checked) vark.push("Visual");
+            if(document.getElementById('v_auditory').checked) vark.push("Auditory");
+            if(document.getElementById('v_read').checked) vark.push("Reading/Writing");
+            if(document.getElementById('v_kinesthetic').checked) vark.push("Kinesthetic");
+
+            const prompt = `Act as an expert Supplemental Instruction (SI) Leader. Create a 50-60 minute session plan for a ${format} session supporting about ${attendance} students on the topic: "${topic}". 
+            
+            The session must incorporate:
+            1. An opener (5-10 mins) to build relationships and get students engaged.
+            2. Main activities (30-40 mins) that prioritize collaborative, student-to-student interaction.
+            3. A closer (5-10 mins) to summarize learning.
+            
+            The activities must align with Bloom's Taxonomy level: ${bloom}.
+            The strategies must incorporate these learning modalities (VARK): ${vark.join(', ')}.
+            
+            Requirements:
+            - Do not lecture. Create activities where students do the heavy lifting (e.g., Peer-to-Peer, collaborative problem solving).
+            - Include 3-5 sample questions/prompts that encourage higher-order thinking based on the Bloom's level.
+            - Ensure activities are appropriate for a ${format} setting.
+            - Provide clear, concise instructions for each activity.`;
+
+            document.getElementById('output').textContent = prompt;
+        }
+    </script>
+</body>
+</html>
